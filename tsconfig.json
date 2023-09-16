@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "target": "ES2019",
-    "module": "CommonJS",
+    "module": "ESNext",  // Change this from "CommonJS" to "ESNext" or "ES6"
     "allowJs": true,
     "outDir": "./dist",
     "declaration": false,
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "node"
   },
   "include": [
     "src/**/*.ts",
