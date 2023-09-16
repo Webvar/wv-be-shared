@@ -1,4 +1,4 @@
-// yourLoggerFileName.d.ts
+// helpers/logger.d.ts
 
 import { Logger, SerializerFn } from 'pino';
 import { RequestHandler } from 'express';
