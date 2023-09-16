@@ -6,5 +6,3 @@ import { RequestHandler } from 'express';
 export function loggerFactory(fileUrl: string): Logger;
 
 export function expressPinoFactory(logger: Logger, ignorePaths?: string[]): RequestHandler;
-
-export const redaction: SerializerFn;
