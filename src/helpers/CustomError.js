@@ -1,3 +1,5 @@
+// helpers/CustomError.js
+
 import { v4 as uuid } from 'uuid';
 import loggerFactory from '../logger.js';
 

@@ -1,3 +1,5 @@
+// helpers/logger.js
+
 import path from 'path';
 import noir from 'pino-noir';
 import expressPino from 'express-pino-logger';
