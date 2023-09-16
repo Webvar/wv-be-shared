@@ -1,4 +1,10 @@
 // index.ts
 
-export * from './helpers/logger';
-export * from './helpers/CustomError';
+import { loggerFactory, expressPinoFactory } from './helpers/logger';
+import CustomError from './helpers/CustomError';
+
+export {
+  loggerFactory,
+  expressPinoFactory,
+  CustomError,
+}
