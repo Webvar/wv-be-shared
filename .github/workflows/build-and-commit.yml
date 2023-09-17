@@ -37,10 +37,12 @@ jobs:
 
     - name: Commit and push changes
       run: |
+        git status
+        git diff
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
         git commit -m "Automated build commit" || echo "No changes to commit"
-        git push https://${{ secrets.GIT_AUTH_TOKEN }}@github.com/Webvar/wv-be-shared.git ${{ github.head_ref }}
+        git push https://x-access-token:${{ secrets.GITHUB_DEPLOY_TOKEN }}@github.com/Webvar/wv-be-shared.git WVP-100
       env:
         GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
