@@ -4,5 +4,10 @@ export default CustomError;
  * so, after, the real error could be found on logs by searching this custom unique code
  */
 declare class CustomError extends Error {
-    constructor(message: any, err: any);
+    /**
+      * Creates an instance of CustomError.
+      * @param {string} message - The error message.
+      * @param {Error} [err] - The original error object.
+      */
+    constructor(message: string, err?: Error | undefined);
 }
