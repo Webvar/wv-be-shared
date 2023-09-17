@@ -9,7 +9,12 @@ const logger = loggerFactory('file:///helpers/CustomError.js');
  * so, after, the real error could be found on logs by searching this custom unique code
  */
 class CustomError extends Error {
-    constructor(message, err) {
+    /**
+      * Creates an instance of CustomError.
+      * @param {string} message - The error message.
+      * @param {Error} [err] - The original error object.
+      */
+    constructor(message, err = undefined) {
         super(message);
         const errorCode = uuid();
         logger.error({ errorCode, message, err: (err || this) });
