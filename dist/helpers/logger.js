@@ -17,7 +17,7 @@ const redaction = noir({
  * @param {string} fileUrl File URL usually comes from 'import.meta.url'
  * @returns {import('pino').Logger} Logger
  */
-function loggerFactory(fileUrl) {
+export function loggerFactory(fileUrl) {
     const pino = pinoFactory({
         level: process.env.LOG_LEVEL || 'warn',
         serializers: redaction,
