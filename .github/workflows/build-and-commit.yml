@@ -7,10 +7,14 @@ on:
     types:
       - opened
       - synchronize
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
     - name: Check PR title for Jira ID
@@ -38,3 +42,14 @@ jobs:
     - name: Check for uncommitted changes in dist
       run: |
         git diff --exit-code dist/ || (echo "Error: Uncommitted changes found in dist. Please commit the latest dist folder." && exit 1)
+
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Notify Slack - WV-BE-SHARED Library Updated
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_MESSAGE: "wv-be-shared library has been updated and merged into main."
