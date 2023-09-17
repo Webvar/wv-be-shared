@@ -52,4 +52,4 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-        SLACK_MESSAGE: "wv-be-shared library has been updated and merged into main."
+        SLACK_MESSAGE: "wv-be-shared library has been updated and merged into main. [View PR](${{ github.event.pull_request.html_url }})"
