@@ -4,7 +4,7 @@
     "module": "ESNext",  // Change this from "CommonJS" to "ESNext" or "ES6"
     "allowJs": true,
     "outDir": "./dist",
-    "declaration": false,
+    "declaration": true,
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node"
