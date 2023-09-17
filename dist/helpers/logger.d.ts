@@ -3,11 +3,4 @@
  * @returns {import('pino').Logger} Logger
  */
 export function loggerFactory(fileUrl: string): import('pino').Logger;
-/**
- * Pino middleware factory for express
- * @param {import('pino').Logger} logger Initiated logger
- * @param {Array<String>} ignorePaths Aditional paths to ignore. '/healthcheck' and '/favicon.ico' already included
- * @returns {ExpressMiddleware} express middleware to use with app.use(..)
- */
-export function expressPinoFactory(logger: import('pino').Logger, ignorePaths?: Array<string>): ExpressMiddleware;
 export default loggerFactory;

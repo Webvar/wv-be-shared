@@ -38,20 +38,4 @@ export function loggerFactory(fileUrl) {
   });
 }
 
-/**
- * Pino middleware factory for express
- * @param {import('pino').Logger} logger Initiated logger
- * @param {Array<String>} ignorePaths Aditional paths to ignore. '/healthcheck' and '/favicon.ico' already included
- * @returns {ExpressMiddleware} express middleware to use with app.use(..)
- */
-export function expressPinoFactory(logger, ignorePaths = []) {
-  return expressPino({
-    logger,
-    serializers: logger[Symbol.for('pino.serializers')],
-    autoLogging: {
-      ignorePaths: ['/healthcheck', '/favicon.ico', ...ignorePaths],
-    },
-  });
-}
-
 export default loggerFactory;

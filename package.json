@@ -22,8 +22,6 @@
   },
   "homepage": "https://github.com/Webvar/wv-be-shared#readme",
   "dependencies": {
-    "express": "^4.18.2",
-    "express-pino-logger": "^7.0.0",
     "pino": "^8.15.1",
     "pino-noir": "^2.2.1",
     "uuid": "^9.0.1"
