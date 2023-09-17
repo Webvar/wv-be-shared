@@ -1,4 +1,6 @@
-name: Build and Commit
+# .github/workflows/build-and-commit.yml
+
+name: Build and Check Dist
 
 on:
   pull_request:
@@ -21,8 +23,6 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v2
-      with:
-        ref: ${{ github.head_ref }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v2
@@ -35,14 +35,6 @@ jobs:
     - name: Build project
       run: npm run build
 
-    - name: Commit and push changes
+    - name: Check for uncommitted changes in dist
       run: |
-        git status
-        git diff
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add -A
-        git commit -m "Automated build commit" || echo "No changes to commit"
-        git push https://x-access-token:${{ secrets.GIT_AUTH_TOKEN }}@github.com/Webvar/wv-be-shared.git ${{ github.head_ref }}
-      env:
-        GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
+        git diff --exit-code dist/ || (echo "Error: Uncommitted changes found in dist. Please commit the latest dist folder." && exit 1)
