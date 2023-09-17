@@ -13,7 +13,7 @@
     "src/**/*.ts",
     "src/**/*.js",
     "src/**/*.d.ts"
-  ],
+, "src/helpers/logger.d.ts", "tests/index.test.ts"  ],
   "exclude": [
     "node_modules"
   ]
