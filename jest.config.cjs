@@ -13,6 +13,10 @@ module.exports = {
       useESM: true
     }
   },
+  collectCoverageFrom: [
+    "src/**/*.{js,ts}",
+    "!dist/**/*"
+  ],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   }
