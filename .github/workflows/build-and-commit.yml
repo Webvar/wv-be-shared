@@ -1,0 +1,55 @@
+# .github/workflows/build-and-commit.yml
+
+name: Build and Check Dist
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Check PR title for Jira ID
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        if [[ ! "$PR_TITLE" =~ ^WVP-[0-9]+ ]]; then
+          echo "Error: PR title does not contain a Jira task ID in the format WVP-<number>"
+          exit 1
+        fi
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build
+
+    - name: Check for uncommitted changes in dist
+      run: |
+        git diff --exit-code dist/ || (echo "Error: Uncommitted changes found in dist. Please commit the latest dist folder." && exit 1)
+
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Notify Slack - WV-BE-SHARED Library Updated
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_MESSAGE: "wv-be-shared library has been updated and merged into main. [View PR](${{ github.event.pull_request.html_url }})"
