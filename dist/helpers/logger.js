@@ -1,15 +1,16 @@
 // helpers/logger.js
 import path from 'path';
 import noir from 'pino-noir';
-import expressPino from 'express-pino-logger';
 import pinoFactory from 'pino';
 import { fileURLToPath } from 'url';
 // To obscure sensitive information from logger
-const redaction = noir({
-    req: expressPino.stdSerializers.req,
-    res: pinoFactory.stdSerializers.res,
-    err: pinoFactory.stdSerializers.err,
-}, [
+const redaction = noir(
+// {
+//   req: expressPino.stdSerializers.req,
+//   res: pinoFactory.stdSerializers.res,
+//   err: pinoFactory.stdSerializers.err,
+// },
+[
     'password', 'key', 'req.headers.authorization', 'req.headers.authentication',
     'authorization', 'access_token', 'token', 'data.access_token',
 ], '[Redacted]');
