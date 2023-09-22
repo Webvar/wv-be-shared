@@ -4,7 +4,7 @@ import jwt, { SigningKeyCallback } from 'jsonwebtoken';
 import jwksClient, { CertSigningKey, RsaSigningKey } from 'jwks-rsa';
 import { Request, Response, NextFunction } from 'express';
 import { BaseContext } from '@apollo/server';
-import loggerFactory from '../helpers/logger';
+import loggerFactory from '../helpers/logger.js';
 
 // TODO: jest test can't recognize import.meta.url
 // const logger = loggerFactory(import.meta.url);
