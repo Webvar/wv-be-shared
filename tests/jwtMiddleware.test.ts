@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
 import { Request, Response, NextFunction } from 'express';
 import { jwtMiddleware } from '../src';
 import { jwtVerifyCallback } from '../src/middlewares/jwtMiddleware';
@@ -8,7 +7,6 @@ jest.mock('jsonwebtoken');
 jest.mock('jwks-rsa');
 
 const mockJwtVerify = jwt.verify as jest.MockedFunction<typeof jwt.verify>;
-const mockJwksClientGetSigningKey = jest.fn();
 
 const mockRequest: Request = {
   headers: {

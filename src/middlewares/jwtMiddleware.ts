@@ -39,20 +39,9 @@ function getKey(header: jwt.JwtHeader, callback: SigningKeyCallback) {
   });
 }
 
-// Define a more specific type for decoded JWT
-interface DecodedJWT {
-  'https://hasura.io/jwt/claims'?: {
-    'x-hasura-user-id'?: string;
-    'x-hasura-allowed-roles'?: string[];
-  };
-  sub?: string;
-  email?: string;
-}
-
-
-export function jwtVerifyCallback(err: Error | null, decoded: DecodedJWT, req: Request) {
-  if (!err && typeof decoded === 'object' && decoded !== null) {
-    const hasuraClaims = decoded['https://hasura.io/jwt/claims'];
+export function jwtVerifyCallback(err: Error | null, decoded: string | jwt.JwtPayload | null, req: Request) {
+  if (!err && decoded && typeof decoded === 'object') {
+    const hasuraClaims = (decoded as jwt.JwtPayload)['https://hasura.io/jwt/claims'];
 
     if (hasuraClaims) {
       req.me = {
@@ -76,7 +65,9 @@ export default function jwtMiddleware(req: Request, _res: Response, next: NextFu
 
   if (token) {
     jwt.verify(token, getKey, { algorithms: ['RS256'] }, (err, decoded) => {
-      jwtVerifyCallback(err, decoded, req);
+      if (decoded !== undefined) {
+        jwtVerifyCallback(err, decoded, req);
+      }
       next();
     });
   } else {
