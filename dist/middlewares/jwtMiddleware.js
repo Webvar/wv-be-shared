@@ -1,7 +1,7 @@
 // middleware/jwt.ts
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
-import loggerFactory from '../helpers/logger';
+import loggerFactory from '../helpers/logger.js';
 // TODO: jest test can't recognize import.meta.url
 // const logger = loggerFactory(import.meta.url);
 const logger = loggerFactory('file:///middlewares/jwtMiddleware.ts');
