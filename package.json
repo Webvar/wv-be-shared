@@ -22,6 +22,9 @@
   },
   "homepage": "https://github.com/Webvar/wv-be-shared#readme",
   "dependencies": {
+    "@apollo/server": "^4.9.3",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.0.1",
     "pino": "^8.15.1",
     "pino-noir": "^2.2.1",
     "uuid": "^9.0.1"
