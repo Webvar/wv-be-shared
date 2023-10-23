@@ -2,6 +2,7 @@ import { Connection, connect, Options } from 'amqplib';
 import { setIntervalAsync, clearIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 
 import loggerFactory from '../logger.js';
+import { RabbitMQChannel } from './RabbitMQChannel.js';
 import { RabbitMQPublish } from './handlers/RabbitMQPublish.js';
 import { RabbitMQConsumer } from './handlers/RabbitMQConsumer';
 
@@ -26,6 +27,7 @@ export class RabbitMQ {
   private establishConnection: () => void;
   private options: RabbitMQOptions;
   private reconnectInterval: SetIntervalAsyncTimer<[]> | null = null;
+  private channels: Record<string, RabbitMQChannel> = {};
 
   constructor(options?: Partial<RabbitMQOptions>) {
     const lg = this.logger.child({ method: 'constructor' });
@@ -89,6 +91,9 @@ export class RabbitMQ {
       this.connection = await this.createConnection();
       if (this.connection) {
         this.establishConnection();
+        Object.values(this.channels).forEach((channel) => {
+          channel.resetConnection(this.connection!);
+        });
 
         if (this.reconnectInterval) {
           await clearIntervalAsync(this.reconnectInterval);
@@ -105,6 +110,58 @@ export class RabbitMQ {
     };
   }
 
+  async publish(entity: RabbitMQPublish) {
+    const lg = this.logger.child({ method: 'publish' });
+
+    lg.debug({ state: 'PUBLISH' });
+
+    await this.connectionEstablished;
+    if (!this.connection) {
+      lg.error({ state: 'PUBLISH_ERROR_CONNECTION', entity: entity.name });
+      return;
+    }
+
+    if (!this.channels[entity.name]) {
+      this.channels[entity.name] = new RabbitMQChannel(this.connection, {
+        name: entity.name,
+      });
+      lg.debug({ state: 'PUBLISH_CREATE_CHANNEL', entity: entity.name });
+    }
+
+    try {
+      await this.channels[entity.name].publish(entity);
+      lg.debug({ state: 'PUBLISH_SUCCESSFUL', entity: entity.name });
+    } catch (err) {
+      lg.error({ state: 'PUBLISH_ERROR', err, entity: entity.name });
+    }
+  }
+
+  async subscribe(entity: RabbitMQConsumer) {
+    const lg = this.logger.child({ method: 'subscribe' });
+
+    lg.debug({ state: 'SUBSCRIBE' });
+
+    await this.connectionEstablished;
+    if (!this.connection) {
+      lg.error({ state: 'SUBSCRIBE_ERROR_CONNECTION', entity: entity.name });
+      return;
+    }
+
+    if (!this.channels[entity.name]) {
+      this.channels[entity.name] = new RabbitMQChannel(this.connection, {
+        name: entity.name,
+        activityTimeout: 0,
+      });
+      lg.debug({ state: 'SUBSCRIBE_CREATE_CHANNEL', entity: entity.name });
+    }
+
+    try {
+      await this.channels[entity.name].subscribeConsumer(entity);
+      lg.debug({ state: 'SUBSCRIBE_SUCCESSFUL', entity: entity.name });
+    } catch (err) {
+      lg.error({ state: 'SUBSCRIBE_ERROR', err, entity: entity.name });
+    }
+  }
 
   async assertQueue(queue: string, options?: Options.AssertQueue) {
     const lg = this.logger.child({ method: 'assertQueue' });
