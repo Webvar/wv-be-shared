@@ -1,4 +1,4 @@
-import { Options, MessageFields, MessageProperties, Message } from 'amqplib';
+import { Options, Message } from 'amqplib';
 
 export type RabbitMQConsumerOptions = {
   target: string;

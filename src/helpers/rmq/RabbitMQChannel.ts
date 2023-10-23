@@ -166,7 +166,7 @@ export class RabbitMQChannel {
 
     this.isProcessingPublishQueue = true;
 
-    while (true) {
+    while (this.isProcessingPublishQueue) {
       lg.debug({ state: 'PROCESS_QUEUE_NEXT_STEP' });
       await this.waitForChannel();
       if (!this.channel) {
