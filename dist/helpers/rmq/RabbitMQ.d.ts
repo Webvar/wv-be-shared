@@ -1,4 +1,4 @@
-import { Options } from 'amqplib';
+import { Connection, Options } from 'amqplib';
 import { RabbitMQPublish } from './handlers/RabbitMQPublish.js';
 import { RabbitMQConsumer } from './handlers/RabbitMQConsumer';
 export type RabbitMQOptions = {
@@ -14,6 +14,8 @@ export declare class RabbitMQ {
     private options;
     private reconnectInterval;
     private channels;
+    get currentConnection(): Connection | null;
+    waitConnection(): Promise<void>;
     constructor(options?: Partial<RabbitMQOptions>);
     private createConnection;
     private startRetryConnection;

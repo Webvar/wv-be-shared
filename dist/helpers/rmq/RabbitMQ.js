@@ -9,6 +9,12 @@ const DEFAULT_OPTIONS = {
     reconnectTimeout: 5000,
 };
 export class RabbitMQ {
+    get currentConnection() {
+        return this.connection;
+    }
+    waitConnection() {
+        return this.connectionEstablished;
+    }
     constructor(options) {
         this.logger = logger.child({ class: 'RabbitMQ' });
         this.reconnectInterval = null;
@@ -57,7 +63,11 @@ export class RabbitMQ {
         }
         const lg = this.logger.child({ method: 'startRetryConnection' });
         this.connectionEstablished = new Promise((resolve) => {
-            this.establishConnection = resolve;
+            let oldResolve = this.establishConnection;
+            this.establishConnection = () => {
+                oldResolve();
+                resolve();
+            };
         });
         lg.info({ state: 'CONNECTION_INITIATE_RETRY' });
         this.reconnectInterval = setIntervalAsync(async () => {
