@@ -29,6 +29,14 @@ export class RabbitMQ {
   private reconnectInterval: SetIntervalAsyncTimer<[]> | null = null;
   private channels: Record<string, RabbitMQChannel> = {};
 
+  get currentConnection() {
+    return this.connection;
+  }
+
+  waitConnection(): Promise<void> {
+    return this.connectionEstablished;
+  }
+
   constructor(options?: Partial<RabbitMQOptions>) {
     const lg = this.logger.child({ method: 'constructor' });
 
@@ -82,7 +90,11 @@ export class RabbitMQ {
     const lg = this.logger.child({ method: 'startRetryConnection' });
 
     this.connectionEstablished = new Promise((resolve) => {
-      this.establishConnection = resolve;
+      let oldResolve = this.establishConnection;
+      this.establishConnection = () => {
+        oldResolve();
+        resolve();
+      }
     });
 
     lg.info({ state: 'CONNECTION_INITIATE_RETRY' });
