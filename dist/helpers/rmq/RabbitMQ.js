@@ -63,7 +63,7 @@ export class RabbitMQ {
         }
         const lg = this.logger.child({ method: 'startRetryConnection' });
         this.connectionEstablished = new Promise((resolve) => {
-            let oldResolve = this.establishConnection;
+            const oldResolve = this.establishConnection;
             this.establishConnection = () => {
                 oldResolve();
                 resolve();
