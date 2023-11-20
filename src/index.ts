@@ -7,7 +7,8 @@ import jwtMiddleware, { WVServiceContext } from './middlewares/jwtMiddleware.js'
 import { RabbitMQ } from './helpers/rmq/RabbitMQ.js';
 import { RabbitMQPublish, RabbitMQPublishOptions, RabbitMQPublishTargetType } from './helpers/rmq/handlers/RabbitMQPublish.js';
 import { RabbitMQConsumer, RabbitMQConsumerOptions } from './helpers/rmq/handlers/RabbitMQConsumer.js';
-import { createResolvers, createSchema, createBaseTypes } from './hasura/index.js';
+import { createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
+import type { PrismaWhere } from './hasura';
 
 export {
   jwtMiddleware,
@@ -20,7 +21,15 @@ export {
   RabbitMQPublishTargetType,
   RabbitMQConsumer,
   RabbitMQPublishOptions,
-  createResolvers,
   createSchema,
   createBaseTypes,
+  graphqlInfoHasSelection,
+  graphqlInfoToPrismaInclude,
+  graphqlSelectionSetToPrismaInclude,
+  graphqlWhereToPrismaWhere,
+  graphqlOrderByToPrismaOrderBy,
+};
+
+export type {
+  PrismaWhere,
 };

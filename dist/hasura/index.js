@@ -1,13 +1,13 @@
 import { GraphQLEnumType, GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString, Kind, } from 'graphql';
 import camelcase from 'camelcase';
-import CustomError from '../helpers/CustomError.js';
 import createOrderByEnum from './order-by.js';
 import createComparisonExpInputObjectType from './comparison-exp.js';
+import createComparisonExpStringType from './string-comparison-exp.js';
 export const createBaseTypes = (prefix = '', baseScalars) => {
     return new GraphQLSchema({
         types: [
             createOrderByEnum(prefix),
-            ...baseScalars.map((scalar) => createComparisonExpInputObjectType('', scalar)),
+            ...baseScalars.map((scalar) => scalar.name === 'String' ? createComparisonExpStringType() : createComparisonExpInputObjectType('', scalar)),
         ],
     });
 };
@@ -174,7 +174,7 @@ export const createSchema = (prefix = '', baseTypes, entity, pkField = 'id', res
         types: [EntityOrderBy, EntitySelectColumn, EntityBoolExp],
     });
 };
-const graphqlSelectionToPrismaInclude = (selectionSet) => {
+export const graphqlSelectionSetToPrismaInclude = (selectionSet, fields) => {
     if (!selectionSet) {
         return undefined;
     }
@@ -183,7 +183,7 @@ const graphqlSelectionToPrismaInclude = (selectionSet) => {
             const fieldSelection = selection;
             if (fieldSelection.selectionSet) {
                 return {
-                    [fieldSelection.name.value]: graphqlSelectionToPrismaInclude(fieldSelection.selectionSet),
+                    [fieldSelection.name.value]: graphqlSelectionSetToPrismaInclude(fieldSelection.selectionSet, fields),
                 };
             }
             return {};
@@ -200,171 +200,87 @@ const graphqlSelectionToPrismaInclude = (selectionSet) => {
                 : true;
         });
     });
+    Object.keys(result).forEach((key) => {
+        if (fields.includes(key)) {
+            delete result[key];
+        }
+    });
     return result;
 };
-const convertHasuraWhereToPrisma = (where) => {
-    const hasuraWhere = where;
+export const graphqlInfoToPrismaInclude = (info, fields) => {
+    const selectionSet = info.fieldNodes[0].selectionSet;
+    if (!selectionSet) {
+        return undefined;
+    }
+    return graphqlSelectionSetToPrismaInclude(selectionSet, fields);
+};
+export const graphqlWhereToPrismaWhere = (where) => {
     const prismaWhere = {};
-    prismaWhere['gte'] = hasuraWhere['_gte'];
-    prismaWhere['gt'] = hasuraWhere['_gt'];
-    prismaWhere['in'] = hasuraWhere['_in'];
-    prismaWhere['lte'] = hasuraWhere['_lte'];
-    prismaWhere['lt'] = hasuraWhere['_lt'];
-    prismaWhere['notIn'] = hasuraWhere['_nin'];
-    prismaWhere['equals'] = hasuraWhere['_eq'];
+    if (!where) {
+        return {};
+    }
+    Object.keys(where).forEach((key) => {
+        var _a, _b;
+        if (key === '_or') {
+            prismaWhere.OR = (_a = where._or) === null || _a === void 0 ? void 0 : _a.map((orWhere) => graphqlWhereToPrismaWhere(orWhere));
+            return;
+        }
+        if (key === '_and') {
+            prismaWhere.AND = (_b = where._and) === null || _b === void 0 ? void 0 : _b.map((andWhere) => graphqlWhereToPrismaWhere(andWhere));
+            return;
+        }
+        if (key === '_not') {
+            prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not);
+            return;
+        }
+        prismaWhere[key] = {};
+        const fieldWhere = where[key];
+        if (fieldWhere._gte) {
+            prismaWhere[key].gte = fieldWhere._gte;
+        }
+        if (fieldWhere._gt) {
+            prismaWhere[key].gt = fieldWhere._gt;
+        }
+        if (fieldWhere._in) {
+            prismaWhere[key].in = fieldWhere._in;
+        }
+        if (fieldWhere._lte) {
+            prismaWhere[key].lte = fieldWhere._lte;
+        }
+        if (fieldWhere._lt) {
+            prismaWhere[key].lt = fieldWhere._lt;
+        }
+        if (fieldWhere._nin) {
+            prismaWhere[key].notIn = fieldWhere._nin;
+        }
+        if (fieldWhere._eq) {
+            prismaWhere[key].equals = fieldWhere._eq;
+        }
+        if (fieldWhere._neq) {
+            prismaWhere[key].not = fieldWhere._neq;
+        }
+        if (fieldWhere._like || fieldWhere._ilike) {
+            prismaWhere[key].contains = fieldWhere._like || fieldWhere._ilike;
+            prismaWhere[key].mode = 'insensitive';
+        }
+    });
     return prismaWhere;
 };
-export const createResolvers = (entityName, dbPath, 
-/* eslint-disable */
-initDb) => {
-    const key = `${entityName.toLowerCase()[0]}${entityName.slice(1)}`;
-    const getMany = async (_, args, context, info) => {
-        var _a;
-        const me = context.req.me;
-        if (!me) {
-            throw new CustomError('Authorization required');
-        }
-        const db = await initDb();
-        const instance = db[dbPath];
-        const include = graphqlSelectionToPrismaInclude(info.fieldNodes[0].selectionSet);
-        if (include) {
-            Object.keys(include).forEach((key) => {
-                if (instance.fields[key]) {
-                    delete include[key];
-                }
-            });
-        }
-        const where = {};
-        if (args.where) {
-            Object.entries(args.where).forEach(([key, filter]) => {
-                if (key !== '_not' && key !== '_or' && key !== '_and') {
-                    where[key] = convertHasuraWhereToPrisma(filter);
-                }
-            });
-        }
-        const entities = await instance.findMany({
-            take: args.limit,
-            skip: args.offset,
-            where,
-            distinct: args.distinctOn,
-            include,
-            orderBy: (_a = args.orderBy) === null || _a === void 0 ? void 0 : _a.map((orderBy) => {
-                return Object.fromEntries(Object.entries(orderBy).map(([field, order]) => {
-                    const orderBy = order;
-                    return [
-                        field,
-                        orderBy.toLowerCase().startsWith('asc') ? 'asc' : 'desc',
-                    ];
-                }));
-            }),
-        });
-        await db.$disconnect();
-        return entities;
-    };
-    const getAggregate = async (_, args, context, info) => {
-        var _a, _b, _c, _d;
-        const me = context.req.me;
-        if (!me) {
-            throw new CustomError('Authorization required');
-        }
-        const db = await initDb();
-        const instance = db[dbPath];
-        const where = {};
-        if (args.where) {
-            Object.entries(args.where).forEach(([key, filter]) => {
-                if (key !== '_not' && key !== '_or' && key !== '_and') {
-                    where[key] = convertHasuraWhereToPrisma(filter);
-                }
-            });
-        }
-        const result = {
-            nodes: [],
-            aggregate: {
-                count: 0,
-            },
-        };
-        if ((_a = info.fieldNodes[0].selectionSet) === null || _a === void 0 ? void 0 : _a.selections.find((selection) => {
-            const field = selection;
-            return field.name.value === 'aggregate';
-        })) {
-            const { _count } = await instance.aggregate({
-                _count: true,
-                take: args.limit,
-                skip: args.offset,
-                where,
-                orderBy: (_b = args.orderBy) === null || _b === void 0 ? void 0 : _b.map((orderBy) => {
-                    return Object.fromEntries(Object.entries(orderBy).map(([field, order]) => {
-                        const orderBy = order;
-                        return [
-                            field,
-                            orderBy.toLowerCase().startsWith('asc') ? 'asc' : 'desc',
-                        ];
-                    }));
-                }),
-            });
-            result.aggregate.count = _count;
-        }
-        const nodes = (_c = info.fieldNodes[0].selectionSet) === null || _c === void 0 ? void 0 : _c.selections.find((selection) => {
-            const field = selection;
-            return field.name.value === 'nodes';
-        });
-        if (nodes) {
-            const include = graphqlSelectionToPrismaInclude(nodes.selectionSet);
-            if (include) {
-                Object.keys(include).forEach((key) => {
-                    if (instance.fields[key]) {
-                        delete include[key];
-                    }
-                });
-            }
-            const entities = await instance.findMany({
-                take: args.limit,
-                skip: args.offset,
-                where,
-                distinct: args.distinctOn,
-                include,
-                orderBy: (_d = args.orderBy) === null || _d === void 0 ? void 0 : _d.map((orderBy) => {
-                    return Object.fromEntries(Object.entries(orderBy).map(([field, order]) => {
-                        const orderBy = order;
-                        return [
-                            field,
-                            orderBy.toLowerCase().startsWith('asc') ? 'asc' : 'desc',
-                        ];
-                    }));
-                }),
-            });
-            result.nodes = entities;
-        }
-        await db.$disconnect();
-        return result;
-    };
-    const getOne = async (_, args, context, info) => {
-        const me = context.req.me;
-        if (!me) {
-            throw new CustomError('Authorization required');
-        }
-        const db = await initDb();
-        const instance = db[dbPath];
-        const include = graphqlSelectionToPrismaInclude(info.fieldNodes[0].selectionSet);
-        if (include) {
-            Object.keys(include).forEach((key) => {
-                if (instance.fields[key]) {
-                    delete include[key];
-                }
-            });
-        }
-        const entity = await instance.findFirst({
-            where: args,
-            include,
-        });
-        await db.$disconnect();
-        return entity;
-    };
-    return {
-        Query: {
-            [key]: getMany,
-            [`${key}ByPk`]: getOne,
-            [`${key}Aggregate`]: getAggregate,
-        },
-    };
+export const graphqlOrderByToPrismaOrderBy = (order) => {
+    if (!order) {
+        return undefined;
+    }
+    return order.map((orderBy) => {
+        return Object.fromEntries(Object.entries(orderBy).map(([field, orderBy]) => {
+            const order = orderBy;
+            return [field, order.toLowerCase().startsWith('asc') ? 'asc' : 'desc'];
+        }));
+    });
+};
+export const graphqlInfoHasSelection = (fieldName, info) => {
+    var _a;
+    return (_a = info.fieldNodes[0].selectionSet) === null || _a === void 0 ? void 0 : _a.selections.find((selection) => {
+        const field = selection;
+        return field.name.value === fieldName;
+    });
 };

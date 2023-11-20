@@ -21,24 +21,16 @@ import {
 } from 'graphql';
 import camelcase from 'camelcase';
 
-import { WVServiceContext } from '../middlewares/jwtMiddleware.js';
-import CustomError from '../helpers/CustomError.js';
-
 import createOrderByEnum from './order-by.js';
 import createComparisonExpInputObjectType from './comparison-exp.js';
-import type { HasuraCrudResolversQuery } from './types/resolvers';
+import createComparisonExpStringType from './string-comparison-exp.js';
 import type {
   HasuraCrudDataType,
-  HasuraCrudDataTypeRelationships,
-  HasuraCrudPrimitive,
 } from './types/common';
 import type {
-  HasuraCrudInputComparisonExp,
   HasuraCrudInputStringComparisonExp,
   HasuraCrudOrderBy,
-  HasuraCrudQueryGetManyArgs,
-  HasuraCrudQueryGetAggregateArgs,
-  HasuraCrudQueryGetOneArgs,
+  HasuraCrudInputBoolExp,
 } from './types/inputs';
 
 export const createBaseTypes = (
@@ -49,7 +41,7 @@ export const createBaseTypes = (
     types: [
       createOrderByEnum(prefix),
       ...baseScalars.map((scalar) =>
-        createComparisonExpInputObjectType('', scalar)
+        scalar.name === 'String' ? createComparisonExpStringType() : createComparisonExpInputObjectType('', scalar)
       ),
     ],
   });
@@ -259,9 +251,10 @@ export const createSchema = (
   });
 };
 
-const graphqlSelectionToPrismaInclude = (
-  selectionSet: SelectionSetNode | undefined
-): Record<string, unknown> | undefined => {
+export const graphqlSelectionSetToPrismaInclude = (
+  selectionSet: SelectionSetNode | undefined | null,
+  fields: string[]
+) => {
   if (!selectionSet) {
     return undefined;
   }
@@ -271,8 +264,9 @@ const graphqlSelectionToPrismaInclude = (
       const fieldSelection = selection as FieldNode;
       if (fieldSelection.selectionSet) {
         return {
-          [fieldSelection.name.value]: graphqlSelectionToPrismaInclude(
-            fieldSelection.selectionSet
+          [fieldSelection.name.value]: graphqlSelectionSetToPrismaInclude(
+            fieldSelection.selectionSet,
+            fields
           ),
         };
       }
@@ -286,257 +280,125 @@ const graphqlSelectionToPrismaInclude = (
     Object.entries(selection).forEach(([key, subinclude]) => {
       result[key] = Object.keys(subinclude || {}).length
         ? {
-            include: subinclude,
-          }
+          include: subinclude,
+        }
         : true;
     });
+  });
+
+  Object.keys(result).forEach((key) => {
+    if (fields.includes(key)) {
+      delete result[key];
+    }
   });
 
   return result;
 };
 
-const convertHasuraWhereToPrisma = <T extends HasuraCrudPrimitive>(
-  where: HasuraCrudInputComparisonExp<T>
+export const graphqlInfoToPrismaInclude = (
+  info: GraphQLResolveInfo,
+  fields: string[]
 ) => {
-  const hasuraWhere: HasuraCrudInputStringComparisonExp =
-    where as HasuraCrudInputStringComparisonExp;
-  const prismaWhere: Record<string, unknown> = {};
+  const selectionSet = info.fieldNodes[0].selectionSet;
+  if (!selectionSet) {
+    return undefined;
+  }
 
-  prismaWhere['gte'] = hasuraWhere['_gte'];
-  prismaWhere['gt'] = hasuraWhere['_gt'];
-  prismaWhere['in'] = hasuraWhere['_in'];
-  prismaWhere['lte'] = hasuraWhere['_lte'];
-  prismaWhere['lt'] = hasuraWhere['_lt'];
-  prismaWhere['notIn'] = hasuraWhere['_nin'];
-  prismaWhere['equals'] = hasuraWhere['_eq'];
+  return graphqlSelectionSetToPrismaInclude(selectionSet, fields);
+};
+
+export type PrismaWhere = {
+  OR?: PrismaWhere[];
+  AND?: PrismaWhere[];
+  NOT?: PrismaWhere;
+} & Record<string, Record<string, unknown>>;
+
+export const graphqlWhereToPrismaWhere = (
+  where?: HasuraCrudInputBoolExp<HasuraCrudDataType<unknown, never>>
+): PrismaWhere => {
+  const prismaWhere: PrismaWhere = {};
+
+  if (!where) {
+    return {};
+  }
+
+  Object.keys(where).forEach((key) => {
+    if (key === '_or') {
+      prismaWhere.OR = where._or?.map((orWhere) =>
+        graphqlWhereToPrismaWhere(orWhere)
+      );
+      return;
+    }
+    if (key === '_and') {
+      prismaWhere.AND = where._and?.map((andWhere) =>
+        graphqlWhereToPrismaWhere(andWhere)
+      );
+      return;
+    }
+    if (key === '_not') {
+      prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not!);
+      return;
+    }
+
+    prismaWhere[key] = {};
+    const fieldWhere = where[key] as HasuraCrudInputStringComparisonExp;
+    if (fieldWhere._gte) {
+      prismaWhere[key].gte = fieldWhere._gte;
+    }
+    if (fieldWhere._gt) {
+      prismaWhere[key].gt = fieldWhere._gt;
+    }
+    if (fieldWhere._in) {
+      prismaWhere[key].in = fieldWhere._in;
+    }
+    if (fieldWhere._lte) {
+      prismaWhere[key].lte = fieldWhere._lte;
+    }
+    if (fieldWhere._lt) {
+      prismaWhere[key].lt = fieldWhere._lt;
+    }
+    if (fieldWhere._nin) {
+      prismaWhere[key].notIn = fieldWhere._nin;
+    }
+    if (fieldWhere._eq) {
+      prismaWhere[key].equals = fieldWhere._eq;
+    }
+    if (fieldWhere._neq) {
+      prismaWhere[key].not = fieldWhere._neq;
+    }
+    if (fieldWhere._like || fieldWhere._ilike) {
+      prismaWhere[key].contains = fieldWhere._like || fieldWhere._ilike;
+      prismaWhere[key].mode = 'insensitive';
+    }
+  });
 
   return prismaWhere;
 };
 
-export const createResolvers = <
-  T extends HasuraCrudDataType<
-    unknown,
-    string,
-    HasuraCrudDataTypeRelationships
-  >,
-  C,
-  Me
->(
-  entityName: string,
-  dbPath: string,
-  /* eslint-disable */
-  initDb: () => Promise<any>,
-): { Query: HasuraCrudResolversQuery<T, C> } => {
-  const key = `${entityName.toLowerCase()[0]}${entityName.slice(
-    1
-  )}` as Uncapitalize<T['name']>;
+export const graphqlOrderByToPrismaOrderBy = (
+  order?: Record<string, unknown>[] | null
+) => {
+  if (!order) {
+    return undefined;
+  }
 
-  const getMany = async (
-    _: unknown,
-    args: HasuraCrudQueryGetManyArgs<T>,
-    context: WVServiceContext,
-    info: GraphQLResolveInfo
-  ) => {
-    const me = context.req.me as Me;
-
-    if (!me) {
-      throw new CustomError('Authorization required');
-    }
-
-    const db = await initDb();
-    const instance = db[dbPath];
-
-    const include = graphqlSelectionToPrismaInclude(
-      info.fieldNodes[0].selectionSet
+  return order.map((orderBy) => {
+    return Object.fromEntries(
+      Object.entries(orderBy).map(([field, orderBy]) => {
+        const order = orderBy as HasuraCrudOrderBy;
+        return [field, order.toLowerCase().startsWith('asc') ? 'asc' : 'desc'];
+      })
     );
+  });
+};
 
-    if (include) {
-      Object.keys(include).forEach((key) => {
-        if (instance.fields[key as keyof typeof instance.fields]) {
-          delete include[key];
-        }
-      });
-    }
+export const graphqlInfoHasSelection = (
+  fieldName: string,
+  info: GraphQLResolveInfo
+): FieldNode | undefined => {
+  return info.fieldNodes[0].selectionSet?.selections.find((selection) => {
+    const field = selection as FieldNode;
 
-    const where: Record<string, unknown> = {};
-    if (args.where) {
-      Object.entries(args.where).forEach(([key, filter]) => {
-        if (key !== '_not' && key !== '_or' && key !== '_and') {
-          where[key] = convertHasuraWhereToPrisma(
-            filter as HasuraCrudInputStringComparisonExp
-          );
-        }
-      });
-    }
-
-    const entities = await instance.findMany({
-      take: args.limit,
-      skip: args.offset,
-      where,
-      distinct: args.distinctOn,
-      include,
-      orderBy: args.orderBy?.map((orderBy) => {
-        return Object.fromEntries(
-          Object.entries(orderBy).map(([field, order]) => {
-            const orderBy = order as unknown as HasuraCrudOrderBy;
-            return [
-              field,
-              orderBy.toLowerCase().startsWith('asc') ? 'asc' : 'desc',
-            ];
-          })
-        );
-      }),
-    });
-
-    await db.$disconnect();
-
-    return entities;
-  };
-
-  const getAggregate = async (
-    _: unknown,
-    args: HasuraCrudQueryGetAggregateArgs<T>,
-    context: WVServiceContext,
-    info: GraphQLResolveInfo
-  ) => {
-    const me = context.req.me as Me;
-
-    if (!me) {
-      throw new CustomError('Authorization required');
-    }
-
-    const db = await initDb();
-    const instance = db[dbPath];
-
-    const where: Record<string, unknown> = {};
-    if (args.where) {
-      Object.entries(args.where).forEach(([key, filter]) => {
-        if (key !== '_not' && key !== '_or' && key !== '_and') {
-          where[key] = convertHasuraWhereToPrisma(
-            filter as HasuraCrudInputStringComparisonExp
-          );
-        }
-      });
-    }
-
-    const result = {
-      nodes: [],
-      aggregate: {
-        count: 0,
-      },
-    };
-
-    if (info.fieldNodes[0].selectionSet?.selections.find((selection) => {
-      const field = selection as FieldNode;
-
-      return field.name.value === 'aggregate';
-    })) {
-      const { _count } = await instance.aggregate({
-        _count: true,
-        take: args.limit,
-        skip: args.offset,
-        where,
-        orderBy: args.orderBy?.map((orderBy) => {
-          return Object.fromEntries(
-            Object.entries(orderBy).map(([field, order]) => {
-              const orderBy = order as unknown as HasuraCrudOrderBy;
-              return [
-                field,
-                orderBy.toLowerCase().startsWith('asc') ? 'asc' : 'desc',
-              ];
-            })
-          );
-        }),
-      });
-
-      result.aggregate.count = _count;
-    }
-    const nodes = info.fieldNodes[0].selectionSet?.selections.find((selection) => {
-      const field = selection as FieldNode;
-
-      return field.name.value === 'nodes';
-    }) as FieldNode;
-    if (nodes) {
-      const include = graphqlSelectionToPrismaInclude(
-        nodes.selectionSet,
-      );
-
-      if (include) {
-        Object.keys(include).forEach((key) => {
-          if (instance.fields[key as keyof typeof instance.fields]) {
-            delete include[key];
-          }
-        });
-      }
-
-      const entities = await instance.findMany({
-        take: args.limit,
-        skip: args.offset,
-        where,
-        distinct: args.distinctOn,
-        include,
-        orderBy: args.orderBy?.map((orderBy) => {
-          return Object.fromEntries(
-            Object.entries(orderBy).map(([field, order]) => {
-              const orderBy = order as unknown as HasuraCrudOrderBy;
-              return [
-                field,
-                orderBy.toLowerCase().startsWith('asc') ? 'asc' : 'desc',
-              ];
-            })
-          );
-        }),
-      });
-      result.nodes = entities;
-    }
-
-    await db.$disconnect();
-
-    return result;
-  };
-
-  const getOne = async (
-    _: unknown,
-    args: HasuraCrudQueryGetOneArgs<T>,
-    context: WVServiceContext,
-    info: GraphQLResolveInfo
-  ) => {
-    const me = context.req.me as Me;
-
-    if (!me) {
-      throw new CustomError('Authorization required');
-    }
-
-    const db = await initDb();
-    const instance = db[dbPath];
-
-    const include = graphqlSelectionToPrismaInclude(
-      info.fieldNodes[0].selectionSet
-    );
-
-    if (include) {
-      Object.keys(include).forEach((key) => {
-        if (instance.fields[key]) {
-          delete include[key];
-        }
-      });
-    }
-
-    const entity = await instance.findFirst({
-      where: args,
-      include,
-    });
-
-    await db.$disconnect();
-
-    return entity;
-  };
-
-  return {
-    Query: {
-      [key]: getMany,
-      [`${key}ByPk`]: getOne,
-      [`${key}Aggregate`]: getAggregate,
-    } as HasuraCrudResolversQuery<T, C>,
-  };
+    return field.name.value === fieldName;
+  }) as FieldNode;
 };
