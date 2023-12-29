@@ -39,21 +39,27 @@ export class RabbitMQ {
 
   constructor(options?: Partial<RabbitMQOptions>) {
     const lg = this.logger.child({ method: 'constructor' });
-
+    lg.info({ state: 'SET_OPTIONS', options });
     this.options = RabbitMQ.addDefaultOptions(options);
     this.connection = null;
     this.establishConnection = () => {
     };
     this.connectionEstablished = new Promise((resolve) => {
+      lg.info({ state: 'CONNECTION_ESTABLISHED' });
       this.establishConnection = resolve;
     });
     this.createConnection()
       .then((connection) => {
+        lg.info({ state: 'CONNECTION_CREATED' });
         this.connection = connection;
         this.establishConnection();
-      });
-
-    lg.info({ state: 'CONNECTION_INITIATE' });
+        lg.info({ state: 'CONNECTION_INITIATED' });
+      })
+      .catch((err) => {
+        lg.error({ state: 'CONNECTION_ERROR', err });
+        this.startRetryConnection();
+      }
+    );
   }
 
   private async createConnection(): Promise<Connection | null> {
@@ -61,12 +67,13 @@ export class RabbitMQ {
     try {
       lg.debug({ state: 'CONNECTION_START' });
       const connection = await connect(this.options.url);
-      connection.once('close', (err) => {
+      lg.debug({ state: 'CONNECTION_STATUS', connection });
+      connection.once('close', async (err) => {
         const closeLg = this.logger.child({ method: 'close' });
 
         closeLg.error({ state: 'CONNECTION_UNEXPECTEDLY_CLOSED_RETRY', err });
         if (this.reconnectInterval) {
-          clearIntervalAsync(this.reconnectInterval)
+          await clearIntervalAsync(this.reconnectInterval)
           this.reconnectInterval = null;
         }
         this.startRetryConnection();

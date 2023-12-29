@@ -1,5 +1,6 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -12,6 +13,10 @@ module.exports = {
     node: true,
   },
   rules: {
-    // Add your custom rules here
+    "@typescript-eslint/no-floating-promises": "error"
+  },
+  parserOptions: {
+    project: true,
+    tsconfigRootDir: __dirname,
   },
 };

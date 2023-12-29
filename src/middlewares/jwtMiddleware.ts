@@ -59,12 +59,15 @@ export function jwtVerifyCallback(err: Error | null, decoded: string | jwt.JwtPa
 
 export default function jwtMiddleware(req: Request, _res: Response, next: NextFunction) {
   const lg = logger.child({ function: 'jwtMiddleware' });
-  lg.debug({ hasToken: !!req.headers.authorization });
+  lg.debug({ hasToken: !!req.headers.authorization, headers: req.headers });
 
   const token = req.headers.authorization?.split(' ')[1] || '';
 
   if (token) {
     jwt.verify(token, getKey, { algorithms: ['RS256'] }, (err, decoded) => {
+      if (err) {
+        lg.error({ status: 'error verifying token', err });
+      }
       if (decoded !== undefined) {
         jwtVerifyCallback(err, decoded, req);
       }

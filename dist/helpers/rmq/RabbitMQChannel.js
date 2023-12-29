@@ -164,8 +164,8 @@ export class RabbitMQChannel {
                         continue;
                     }
                     this.isProcessingPublishQueue = false;
-                    this.channel.once('drain', () => {
-                        this.processQueue();
+                    this.channel.once('drain', async () => {
+                        await this.processQueue();
                     });
                     return;
                 }
@@ -209,7 +209,7 @@ export class RabbitMQChannel {
         try {
             lg.debug({ state: 'CHANNEL_START' });
             this.channel = await this.createChannel();
-            this.channel.once('close', () => {
+            this.channel.once('close', async () => {
                 const closeLg = this.logger.child({ method: 'close' });
                 this.channel = null;
                 this.isProcessingPublishQueue = false;
@@ -221,7 +221,7 @@ export class RabbitMQChannel {
                 closeLg.debug({ state: 'CHANNEL_UNEXPECTEDLY_CLOSED_RETRY' });
                 this.startRetryChannel();
                 if (this.recreateChannelInterval) {
-                    clearIntervalAsync(this.recreateChannelInterval);
+                    await clearIntervalAsync(this.recreateChannelInterval);
                     this.recreateChannelInterval = null;
                 }
             });
@@ -246,9 +246,9 @@ export class RabbitMQChannel {
         this.recreateChannelInterval = setIntervalAsync(async () => {
             lg.info({ state: 'CHANNEL_RETRY', retryChannelTimeout: this.options.retryChannelTimeout });
             await this.startChannel();
-            this.processQueue();
+            await this.processQueue();
             if (this.consumer) {
-                this.processConsumer();
+                await this.processConsumer();
             }
             if (this.channel && this.recreateChannelInterval) {
                 await clearIntervalAsync(this.recreateChannelInterval);
