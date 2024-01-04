@@ -40,7 +40,7 @@ export function jwtVerifyCallback(err, decoded, req) {
 export default function jwtMiddleware(req, _res, next) {
     var _a;
     const lg = logger.child({ function: 'jwtMiddleware' });
-    lg.debug({ hasToken: !!req.headers.authorization, headers: req.headers });
+    lg.debug({ hasToken: !!req.headers.authorization });
     const token = ((_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1]) || '';
     if (token) {
         jwt.verify(token, getKey, { algorithms: ['RS256'] }, (err, decoded) => {

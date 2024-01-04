@@ -46,7 +46,6 @@ export class RabbitMQ {
         try {
             lg.debug({ state: 'CONNECTION_START' });
             const connection = await connect(this.options.url);
-            lg.debug({ state: 'CONNECTION_STATUS', connection });
             connection.once('close', async (err) => {
                 const closeLg = this.logger.child({ method: 'close' });
                 closeLg.error({ state: 'CONNECTION_UNEXPECTEDLY_CLOSED_RETRY', err });

@@ -59,7 +59,7 @@ export function jwtVerifyCallback(err: Error | null, decoded: string | jwt.JwtPa
 
 export default function jwtMiddleware(req: Request, _res: Response, next: NextFunction) {
   const lg = logger.child({ function: 'jwtMiddleware' });
-  lg.debug({ hasToken: !!req.headers.authorization, headers: req.headers });
+  lg.debug({ hasToken: !!req.headers.authorization });
 
   const token = req.headers.authorization?.split(' ')[1] || '';
 
