@@ -29,6 +29,7 @@ export function jwtVerifyCallback(err, decoded, req) {
                 auth0Id: decoded.sub,
                 email: decoded.email,
                 roles: hasuraClaims['x-hasura-allowed-roles'] || [],
+                companyId: hasuraClaims['x-hasura-company-id'],
             };
         }
     }
