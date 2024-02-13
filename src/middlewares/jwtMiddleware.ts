@@ -49,6 +49,7 @@ export function jwtVerifyCallback(err: Error | null, decoded: string | jwt.JwtPa
         auth0Id: decoded.sub as string,
         email: decoded.email as string,
         roles: hasuraClaims['x-hasura-allowed-roles'] as string[] || [],
+        companyId: hasuraClaims['x-hasura-company-id'] as string,
       };
     }
   } else {
