@@ -13,7 +13,7 @@ export class RabbitMQPublish {
         this.retries = 0;
     }
     get name() {
-        return this.constructor.name;
+        throw Error("Publisher getter should be overwritten with static string");
     }
     get options() {
         return {};

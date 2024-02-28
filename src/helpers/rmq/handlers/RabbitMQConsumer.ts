@@ -15,7 +15,7 @@ export const DEFAULT_OPTIONS: RabbitMQConsumerOptions = {
 
 export abstract class RabbitMQConsumer {
   get name(): string {
-    return this.constructor.name;
+    throw Error("Consumer getter should be overwritten with static string");
   }
 
   protected get options(): Partial<RabbitMQConsumerOptions> {

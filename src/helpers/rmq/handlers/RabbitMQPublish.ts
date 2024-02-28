@@ -22,7 +22,7 @@ export abstract class RabbitMQPublish {
   retries: number = 0;
 
   get name(): string {
-    return this.constructor.name;
+    throw Error("Publisher getter should be overwritten with static string");
   }
 
   protected get options(): Partial<RabbitMQPublishOptions> {

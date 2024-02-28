@@ -5,7 +5,7 @@ export const DEFAULT_OPTIONS = {
 };
 export class RabbitMQConsumer {
     get name() {
-        return this.constructor.name;
+        throw Error("Consumer getter should be overwritten with static string");
     }
     get options() {
         return {};
