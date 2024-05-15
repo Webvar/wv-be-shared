@@ -370,6 +370,9 @@ export const graphqlWhereToPrismaWhere = (
       prismaWhere[key].contains = fieldWhere._like || fieldWhere._ilike;
       prismaWhere[key].mode = 'insensitive';
     }
+    if(fieldWhere._has) {
+      prismaWhere[key].has = fieldWhere._has
+    }
   });
 
   return prismaWhere;
