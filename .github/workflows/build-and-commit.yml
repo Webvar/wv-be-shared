@@ -17,14 +17,6 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
-    - name: Check PR title for Jira ID
-      run: |
-        PR_TITLE="${{ github.event.pull_request.title }}"
-        if [[ ! "$PR_TITLE" =~ ^WVP-[0-9]+ ]]; then
-          echo "Error: PR title does not contain a Jira task ID in the format WVP-<number>"
-          exit 1
-        fi
-
     - name: Checkout code
       uses: actions/checkout@v2
 
