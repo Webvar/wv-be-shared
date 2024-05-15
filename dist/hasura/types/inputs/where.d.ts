@@ -9,6 +9,7 @@ export type HasuraCrudInputComparisonExp<T extends HasuraCrudPrimitive> = {
     _lte?: NonNullable<T>;
     _neq?: NonNullable<T>;
     _nin?: NonNullable<T>[];
+    _has?: NonNullable<T>[];
 };
 export type HasuraCrudInputStringComparisonExp = HasuraCrudInputComparisonExp<string> & {
     _ilike?: string;
