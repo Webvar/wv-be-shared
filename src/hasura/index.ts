@@ -315,28 +315,29 @@ export type PrismaWhere = {
 
 export const graphqlWhereToPrismaWhere = (
   where?: HasuraCrudInputBoolExp<HasuraCrudDataType<unknown, never>>
-): PrismaWhere => {
+): { prismaWhere: PrismaWhere; fullTextSearch?: string } => {
   const prismaWhere: PrismaWhere = {};
+  let fullTextSearch: string | undefined;
 
   if (!where) {
-    return {};
+    return { prismaWhere: {} };
   }
 
   Object.keys(where).forEach((key) => {
     if (key === '_or') {
-      prismaWhere.OR = where._or?.map((orWhere) =>
-        graphqlWhereToPrismaWhere(orWhere)
+      prismaWhere.OR = where._or?.map(
+        (orWhere) => graphqlWhereToPrismaWhere(orWhere).prismaWhere
       );
       return;
     }
     if (key === '_and') {
-      prismaWhere.AND = where._and?.map((andWhere) =>
-        graphqlWhereToPrismaWhere(andWhere)
+      prismaWhere.AND = where._and?.map(
+        (andWhere) => graphqlWhereToPrismaWhere(andWhere).prismaWhere
       );
       return;
     }
     if (key === '_not') {
-      prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not!);
+      prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not!).prismaWhere;
       return;
     }
 
@@ -373,9 +374,13 @@ export const graphqlWhereToPrismaWhere = (
     if(fieldWhere._has) {
       prismaWhere[key].has = fieldWhere._has
     }
+    if (fieldWhere._fts) {
+      fullTextSearch = fieldWhere._fts;
+      return;
+    }
   });
 
-  return prismaWhere;
+  return { prismaWhere, fullTextSearch };
 };
 
 export const graphqlOrderByToPrismaOrderBy = (
