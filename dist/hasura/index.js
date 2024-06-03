@@ -216,21 +216,22 @@ export const graphqlInfoToPrismaInclude = (info, fields) => {
 };
 export const graphqlWhereToPrismaWhere = (where) => {
     const prismaWhere = {};
+    let fullTextSearch;
     if (!where) {
-        return {};
+        return { prismaWhere: {} };
     }
     Object.keys(where).forEach((key) => {
         var _a, _b;
         if (key === '_or') {
-            prismaWhere.OR = (_a = where._or) === null || _a === void 0 ? void 0 : _a.map((orWhere) => graphqlWhereToPrismaWhere(orWhere));
+            prismaWhere.OR = (_a = where._or) === null || _a === void 0 ? void 0 : _a.map((orWhere) => graphqlWhereToPrismaWhere(orWhere).prismaWhere);
             return;
         }
         if (key === '_and') {
-            prismaWhere.AND = (_b = where._and) === null || _b === void 0 ? void 0 : _b.map((andWhere) => graphqlWhereToPrismaWhere(andWhere));
+            prismaWhere.AND = (_b = where._and) === null || _b === void 0 ? void 0 : _b.map((andWhere) => graphqlWhereToPrismaWhere(andWhere).prismaWhere);
             return;
         }
         if (key === '_not') {
-            prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not);
+            prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not).prismaWhere;
             return;
         }
         prismaWhere[key] = {};
@@ -266,8 +267,12 @@ export const graphqlWhereToPrismaWhere = (where) => {
         if (fieldWhere._has) {
             prismaWhere[key].has = fieldWhere._has;
         }
+        if (fieldWhere._fts) {
+            fullTextSearch = fieldWhere._fts;
+            return;
+        }
     });
-    return prismaWhere;
+    return { prismaWhere, fullTextSearch };
 };
 export const graphqlOrderByToPrismaOrderBy = (order) => {
     if (!order) {
