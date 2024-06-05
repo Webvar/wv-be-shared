@@ -22,6 +22,7 @@ export type HasuraCrudInputStringComparisonExp = HasuraCrudInputComparisonExp<st
     _nsimilar?: string;
     _regex?: string;
     _similar?: string;
+    _fts?: string;
 };
 export type HasuraCrudInputBoolExpRelationshipsOne<T extends HasuraCrudDataType<unknown, string, HasuraCrudDataTypeRelationships>> = {
     [Key in keyof T['relationships']['one']]?: HasuraCrudInputBoolExp<T['relationships']['one'][Key]>;

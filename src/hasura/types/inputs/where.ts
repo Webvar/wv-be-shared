@@ -29,6 +29,7 @@ export type HasuraCrudInputStringComparisonExp =
     _nsimilar?: string;
     _regex?: string;
     _similar?: string;
+    _fts?: string;
   };
 
 export type HasuraCrudInputBoolExpRelationshipsOne<

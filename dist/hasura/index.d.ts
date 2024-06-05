@@ -15,7 +15,10 @@ export type PrismaWhere = {
     AND?: PrismaWhere[];
     NOT?: PrismaWhere;
 } & Record<string, Record<string, unknown>>;
-export declare const graphqlWhereToPrismaWhere: (where?: HasuraCrudInputBoolExp<HasuraCrudDataType<unknown, never>>) => PrismaWhere;
+export declare const graphqlWhereToPrismaWhere: (where?: HasuraCrudInputBoolExp<HasuraCrudDataType<unknown, never>>) => {
+    prismaWhere: PrismaWhere;
+    fullTextSearch?: string | undefined;
+};
 export declare const graphqlOrderByToPrismaOrderBy: (order?: Record<string, unknown>[] | null) => {
     [k: string]: string;
 }[] | undefined;
