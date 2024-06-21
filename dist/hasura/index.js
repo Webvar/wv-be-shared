@@ -272,6 +272,11 @@ export const graphqlWhereToPrismaWhere = (where) => {
             return;
         }
     });
+    Object.keys(prismaWhere).forEach((key) => {
+        if (Object.keys(prismaWhere[key]).length === 0) {
+            delete prismaWhere[key];
+        }
+    });
     return { prismaWhere, fullTextSearch };
 };
 export const graphqlOrderByToPrismaOrderBy = (order) => {
