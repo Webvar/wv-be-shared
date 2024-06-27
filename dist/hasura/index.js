@@ -236,38 +236,38 @@ export const graphqlWhereToPrismaWhere = (where) => {
         }
         prismaWhere[key] = {};
         const fieldWhere = where[key];
-        if (fieldWhere._gte) {
+        if (fieldWhere._gte !== undefined) {
             prismaWhere[key].gte = fieldWhere._gte;
         }
-        if (fieldWhere._gt) {
+        if (fieldWhere._gt !== undefined) {
             prismaWhere[key].gt = fieldWhere._gt;
         }
-        if (fieldWhere._in) {
+        if (fieldWhere._in !== undefined) {
             prismaWhere[key].in = fieldWhere._in;
         }
-        if (fieldWhere._lte) {
+        if (fieldWhere._lte !== undefined) {
             prismaWhere[key].lte = fieldWhere._lte;
         }
-        if (fieldWhere._lt) {
+        if (fieldWhere._lt !== undefined) {
             prismaWhere[key].lt = fieldWhere._lt;
         }
-        if (fieldWhere._nin) {
+        if (fieldWhere._nin !== undefined) {
             prismaWhere[key].notIn = fieldWhere._nin;
         }
-        if (fieldWhere._eq) {
+        if (fieldWhere._eq !== undefined) {
             prismaWhere[key].equals = fieldWhere._eq;
         }
-        if (fieldWhere._neq) {
+        if (fieldWhere._neq !== undefined) {
             prismaWhere[key].not = fieldWhere._neq;
         }
-        if (fieldWhere._like || fieldWhere._ilike) {
+        if (fieldWhere._like !== undefined || fieldWhere._ilike !== undefined) {
             prismaWhere[key].contains = fieldWhere._like || fieldWhere._ilike;
             prismaWhere[key].mode = 'insensitive';
         }
-        if (fieldWhere._has) {
+        if (fieldWhere._has !== undefined) {
             prismaWhere[key].has = fieldWhere._has;
         }
-        if (fieldWhere._fts) {
+        if (fieldWhere._fts !== undefined) {
             fullTextSearch = fieldWhere._fts;
             return;
         }
