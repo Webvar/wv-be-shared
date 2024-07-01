@@ -323,68 +323,85 @@ export const graphqlWhereToPrismaWhere = (
     return { prismaWhere: {} };
   }
 
-  Object.keys(where).forEach((key) => {
-    if (key === '_or') {
-      prismaWhere.OR = where._or?.map(
-        (orWhere) => graphqlWhereToPrismaWhere(orWhere).prismaWhere
-      );
-      return;
-    }
-    if (key === '_and') {
-      prismaWhere.AND = where._and?.map(
-        (andWhere) => graphqlWhereToPrismaWhere(andWhere).prismaWhere
-      );
-      return;
-    }
-    if (key === '_not') {
-      prismaWhere.NOT = graphqlWhereToPrismaWhere(where._not!).prismaWhere;
-      return;
-    }
+  const handleCondition = (
+    condition: HasuraCrudInputBoolExp<HasuraCrudDataType<unknown, never>>
+  ): PrismaWhere => {
+    const conditionWhere: PrismaWhere = {};
+    Object.keys(condition).forEach((key) => {
+      if (key === '_or') {
+        conditionWhere.OR = (
+          condition._or as HasuraCrudInputBoolExp<
+            HasuraCrudDataType<unknown, never>
+          >[]
+        ).map((orWhere) => handleCondition(orWhere));
+        return;
+      }
+      if (key === '_and') {
+        conditionWhere.AND = (
+          condition._and as HasuraCrudInputBoolExp<
+            HasuraCrudDataType<unknown, never>
+          >[]
+        ).map((andWhere) => handleCondition(andWhere));
+        return;
+      }
+      if (key === '_not') {
+        conditionWhere.NOT = handleCondition(
+          condition._not as HasuraCrudInputBoolExp<
+            HasuraCrudDataType<unknown, never>
+          >
+        );
+        return;
+      }
 
-    prismaWhere[key] = {};
-    const fieldWhere = where[key] as HasuraCrudInputStringComparisonExp;
-    if (fieldWhere._gte !== undefined) {
-      prismaWhere[key].gte = fieldWhere._gte;
-    }
-    if (fieldWhere._gt !== undefined) {
-      prismaWhere[key].gt = fieldWhere._gt;
-    }
-    if (fieldWhere._in !== undefined) {
-      prismaWhere[key].in = fieldWhere._in;
-    }
-    if (fieldWhere._lte !== undefined) {
-      prismaWhere[key].lte = fieldWhere._lte;
-    }
-    if (fieldWhere._lt !== undefined) {
-      prismaWhere[key].lt = fieldWhere._lt;
-    }
-    if (fieldWhere._nin !== undefined) {
-      prismaWhere[key].notIn = fieldWhere._nin;
-    }
-    if (fieldWhere._eq !== undefined) {
-      prismaWhere[key].equals = fieldWhere._eq;
-    }
-    if (fieldWhere._neq !== undefined) {
-      prismaWhere[key].not = fieldWhere._neq;
-    }
-    if (fieldWhere._like !== undefined || fieldWhere._ilike !== undefined) {
-      prismaWhere[key].contains = fieldWhere._like || fieldWhere._ilike;
-      prismaWhere[key].mode = 'insensitive';
-    }
-    if(fieldWhere._has !== undefined) {
-      prismaWhere[key].has = fieldWhere._has
-    }
-    if (fieldWhere._fts !== undefined) {
-      fullTextSearch = fieldWhere._fts;
-      return;
-    }
-  });
+      conditionWhere[key] = {};
+      const fieldWhere = condition[key] as HasuraCrudInputStringComparisonExp;
+      if (fieldWhere._gte !== undefined) {
+        conditionWhere[key].gte = fieldWhere._gte;
+      }
+      if (fieldWhere._gt !== undefined) {
+        conditionWhere[key].gt = fieldWhere._gt;
+      }
+      if (fieldWhere._in !== undefined) {
+        conditionWhere[key].in = fieldWhere._in;
+      }
+      if (fieldWhere._lte !== undefined) {
+        conditionWhere[key].lte = fieldWhere._lte;
+      }
+      if (fieldWhere._lt !== undefined) {
+        conditionWhere[key].lt = fieldWhere._lt;
+      }
+      if (fieldWhere._nin !== undefined) {
+        conditionWhere[key].notIn = fieldWhere._nin;
+      }
+      if (fieldWhere._eq !== undefined) {
+        conditionWhere[key].equals = fieldWhere._eq;
+      }
+      if (fieldWhere._neq !== undefined) {
+        conditionWhere[key].not = fieldWhere._neq;
+      }
+      if (fieldWhere._like !== undefined || fieldWhere._ilike !== undefined) {
+        conditionWhere[key].contains = fieldWhere._like || fieldWhere._ilike;
+        conditionWhere[key].mode = 'insensitive';
+      }
+      if (fieldWhere._has !== undefined) {
+        conditionWhere[key].has = fieldWhere._has;
+      }
+      if (fieldWhere._fts !== undefined) {
+        fullTextSearch = fieldWhere._fts;
+        delete conditionWhere[key];
+      }
+    });
 
-  Object.keys(prismaWhere).forEach((key) => {
-    if (Object.keys(prismaWhere[key]).length === 0) {
-      delete prismaWhere[key];
-    }
-  });
+    Object.keys(conditionWhere).forEach((key) => {
+      if (Object.keys(conditionWhere[key]).length === 0) {
+        delete conditionWhere[key];
+      }
+    });
+
+    return conditionWhere;
+  };
+
+  Object.assign(prismaWhere, handleCondition(where));
 
   return { prismaWhere, fullTextSearch };
 };
