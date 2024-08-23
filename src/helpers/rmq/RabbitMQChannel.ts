@@ -11,14 +11,12 @@ export type RabbitMQChannelOptions = {
   retryChannel: boolean;
   retryChannelTimeout: number;
   maxRetryPublish: number;
-  initiate: boolean;
   activityTimeout: number;
   confirmChannel: boolean;
 };
 
 const DEFAULT_OPTIONS: RabbitMQChannelOptions = {
   name: 'channel',
-  initiate: false,
   maxRetryPublish: 3,
   retryChannel: true,
   retryChannelTimeout: 5000,
@@ -48,10 +46,6 @@ export class RabbitMQChannel {
   constructor(private connection: Connection, options?: Partial<RabbitMQChannelOptions>) {
     this.options = RabbitMQChannel.addDefaultOptions(options);
     this.logger = logger.child({ class: 'RabbitMQChannel', channel: this.options.name });
-
-    if (this.options.initiate) {
-      void this.startChannel();
-    }
   }
 
   async publish(entity: RabbitMQPublish): Promise<void> {
@@ -134,9 +128,7 @@ export class RabbitMQChannel {
     this.isProcessingPublishQueue = false;
     this.isProcessingConsume = false;
     this.connection = connection;
-    if (this.options.initiate) {
-      void this.startChannel();
-    }
+    void this.startChannel();
   }
 
   private async createChannel(): Promise<Channel> {

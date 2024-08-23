@@ -109,7 +109,6 @@ export class RabbitMQ {
         if (!this.channels[entity.name]) {
             this.channels[entity.name] = new RabbitMQChannel(this.connection, {
                 name: entity.name,
-                initiate: true,
             });
             lg.debug({ state: 'PUBLISH_CREATE_CHANNEL', entity: entity.name });
         }
@@ -133,7 +132,6 @@ export class RabbitMQ {
             this.channels[entity.name] = new RabbitMQChannel(this.connection, {
                 name: entity.name,
                 activityTimeout: 0,
-                initiate: true
             });
             lg.debug({ state: 'SUBSCRIBE_CREATE_CHANNEL', entity: entity.name });
         }

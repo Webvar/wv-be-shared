@@ -4,7 +4,6 @@ import { RabbitMQPublishTargetType } from './handlers/RabbitMQPublish.js';
 const logger = loggerFactory('file:///rmq/RabbitMQChannel.ts');
 const DEFAULT_OPTIONS = {
     name: 'channel',
-    initiate: false,
     maxRetryPublish: 3,
     retryChannel: true,
     retryChannelTimeout: 5000,
@@ -31,9 +30,6 @@ export class RabbitMQChannel {
         this.consumer = null;
         this.options = RabbitMQChannel.addDefaultOptions(options);
         this.logger = logger.child({ class: 'RabbitMQChannel', channel: this.options.name });
-        if (this.options.initiate) {
-            void this.startChannel();
-        }
     }
     async publish(entity) {
         const lg = this.logger.child({ method: 'publish' });
@@ -101,9 +97,7 @@ export class RabbitMQChannel {
         this.isProcessingPublishQueue = false;
         this.isProcessingConsume = false;
         this.connection = connection;
-        if (this.options.initiate) {
-            void this.startChannel();
-        }
+        void this.startChannel();
     }
     async createChannel() {
         const lg = this.logger.child({ method: 'createChannel' });

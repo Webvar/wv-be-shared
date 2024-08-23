@@ -6,7 +6,6 @@ export type RabbitMQChannelOptions = {
     retryChannel: boolean;
     retryChannelTimeout: number;
     maxRetryPublish: number;
-    initiate: boolean;
     activityTimeout: number;
     confirmChannel: boolean;
 };
