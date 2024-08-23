@@ -43,7 +43,7 @@ export class RabbitMQChannel {
   private isClosed: boolean = false;
   private consumer: RabbitMQConsumer | null = null;
 
-  constructor(private connection: Connection, options?: Partial<RabbitMQChannelOptions>) {
+  constructor(private connection: Connection | null, options?: Partial<RabbitMQChannelOptions>) {
     this.options = RabbitMQChannel.addDefaultOptions(options);
     this.logger = logger.child({ class: 'RabbitMQChannel', channel: this.options.name });
   }
@@ -87,7 +87,7 @@ export class RabbitMQChannel {
     await this.channel.prefetch(this.consumer.fullOptions.prefetch);
 
     await this.channel.consume(this.consumer.fullOptions.target, async (message) => {
-      if(!message) {
+      if (!message) {
         lg.warn({ state: 'PROCESS_CONSUMER_GOT_EMPTY_MESSAGE' });
         return;
       }
@@ -135,6 +135,10 @@ export class RabbitMQChannel {
     const lg = this.logger.child({ method: 'createChannel' });
 
     lg.debug({ status: 'CHANNEL_CREATION' });
+
+    if (!this.connection) {
+      throw new Error('Connection is not initialized');
+    }
 
     try {
       if (this.options.confirmChannel) {
@@ -248,10 +252,10 @@ export class RabbitMQChannel {
   }
 
   private async startChannel() {
-    const lg = this.logger.child({ method: 'startChannel' });
+    const lg = this.logger.child({ method: 'startChannel', channel: this.options.name });
 
     try {
-      lg.debug({ state: 'CHANNEL_START' });
+      lg.info({ state: 'CHANNEL_START' });
       this.channel = await this.createChannel();
       this.channel.once('close', async () => {
         const closeLg = this.logger.child({ method: 'close' });

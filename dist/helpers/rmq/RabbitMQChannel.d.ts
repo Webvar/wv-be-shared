@@ -21,7 +21,7 @@ export declare class RabbitMQChannel {
     private isProcessingConsume;
     private isClosed;
     private consumer;
-    constructor(connection: Connection, options?: Partial<RabbitMQChannelOptions>);
+    constructor(connection: Connection | null, options?: Partial<RabbitMQChannelOptions>);
     publish(entity: RabbitMQPublish): Promise<void>;
     subscribeConsumer(entity: RabbitMQConsumer): Promise<void>;
     processConsumer(): Promise<void>;

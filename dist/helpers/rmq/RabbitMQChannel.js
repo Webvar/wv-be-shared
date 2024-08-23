@@ -102,6 +102,9 @@ export class RabbitMQChannel {
     async createChannel() {
         const lg = this.logger.child({ method: 'createChannel' });
         lg.debug({ status: 'CHANNEL_CREATION' });
+        if (!this.connection) {
+            throw new Error('Connection is not initialized');
+        }
         try {
             if (this.options.confirmChannel) {
                 return await this.connection.createConfirmChannel();
@@ -199,9 +202,9 @@ export class RabbitMQChannel {
         }
     }
     async startChannel() {
-        const lg = this.logger.child({ method: 'startChannel' });
+        const lg = this.logger.child({ method: 'startChannel', channel: this.options.name });
         try {
-            lg.debug({ state: 'CHANNEL_START' });
+            lg.info({ state: 'CHANNEL_START' });
             this.channel = await this.createChannel();
             this.channel.once('close', async () => {
                 const closeLg = this.logger.child({ method: 'close' });

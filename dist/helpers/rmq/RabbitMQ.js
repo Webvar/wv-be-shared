@@ -101,20 +101,21 @@ export class RabbitMQ {
     async publish(entity) {
         const lg = this.logger.child({ method: 'publish' });
         lg.debug({ state: 'PUBLISH' });
+        if (!this.channels[entity.name]) {
+            this.channels[entity.name] = new RabbitMQChannel(this.connection, {
+                name: entity.name,
+            });
+            lg.info({ state: 'PUBLISH_CHANNEL_INITIALIZED', entity: entity.name });
+        }
         await this.connectionEstablished;
         if (!this.connection) {
             lg.error({ state: 'PUBLISH_ERROR_CONNECTION', entity: entity.name });
             return;
         }
-        if (!this.channels[entity.name]) {
-            this.channels[entity.name] = new RabbitMQChannel(this.connection, {
-                name: entity.name,
-            });
-            lg.debug({ state: 'PUBLISH_CREATE_CHANNEL', entity: entity.name });
-        }
+        lg.info({ state: 'PUBLISH_START', entity: entity.name });
         try {
             await this.channels[entity.name].publish(entity);
-            lg.debug({ state: 'PUBLISH_SUCCESSFUL', entity: entity.name });
+            lg.info({ state: 'PUBLISH_SUCCESSFUL', entity: entity.name });
         }
         catch (err) {
             lg.error({ state: 'PUBLISH_ERROR', err, entity: entity.name });
@@ -123,21 +124,22 @@ export class RabbitMQ {
     async subscribe(entity) {
         const lg = this.logger.child({ method: 'subscribe' });
         lg.debug({ state: 'SUBSCRIBE' });
-        await this.connectionEstablished;
-        if (!this.connection) {
-            lg.error({ state: 'SUBSCRIBE_ERROR_CONNECTION', entity: entity.name });
-            return;
-        }
         if (!this.channels[entity.name]) {
             this.channels[entity.name] = new RabbitMQChannel(this.connection, {
                 name: entity.name,
                 activityTimeout: 0,
             });
-            lg.debug({ state: 'SUBSCRIBE_CREATE_CHANNEL', entity: entity.name });
+            lg.debug({ state: 'SUBSCRIBE_ENTITY_INITIALIZED', entity: entity.name });
         }
+        await this.connectionEstablished;
+        if (!this.connection) {
+            lg.error({ state: 'SUBSCRIBE_ERROR_CONNECTION', entity: entity.name });
+            return;
+        }
+        lg.info({ state: 'SUBSCRIBE_CONSUMER', entity: entity.name });
         try {
             await this.channels[entity.name].subscribeConsumer(entity);
-            lg.debug({ state: 'SUBSCRIBE_SUCCESSFUL', entity: entity.name });
+            lg.info({ state: 'SUBSCRIBE_SUCCESSFUL', entity: entity.name });
         }
         catch (err) {
             lg.error({ state: 'SUBSCRIBE_ERROR', err, entity: entity.name });
