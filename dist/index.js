@@ -6,4 +6,5 @@ import { RabbitMQ } from './helpers/rmq/RabbitMQ.js';
 import { RabbitMQPublish, RabbitMQPublishTargetType } from './helpers/rmq/handlers/RabbitMQPublish.js';
 import { RabbitMQConsumer } from './helpers/rmq/handlers/RabbitMQConsumer.js';
 import { createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
-export { jwtMiddleware, loggerFactory, CustomError, RabbitMQ, RabbitMQPublish, RabbitMQPublishTargetType, RabbitMQConsumer, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy, };
+import { authDirective } from './helpers/authorization/authdirective.js';
+export { jwtMiddleware, loggerFactory, CustomError, RabbitMQ, RabbitMQPublish, RabbitMQPublishTargetType, RabbitMQConsumer, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy, authDirective };

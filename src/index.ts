@@ -9,6 +9,7 @@ import { RabbitMQPublish, RabbitMQPublishOptions, RabbitMQPublishTargetType } fr
 import { RabbitMQConsumer, RabbitMQConsumerOptions } from './helpers/rmq/handlers/RabbitMQConsumer.js';
 import { createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
 import type { PrismaWhere } from './hasura';
+import { authDirective } from './helpers/authorization/authdirective.js'
 
 export {
   jwtMiddleware,
@@ -28,6 +29,7 @@ export {
   graphqlSelectionSetToPrismaInclude,
   graphqlWhereToPrismaWhere,
   graphqlOrderByToPrismaOrderBy,
+  authDirective
 };
 
 export type {
