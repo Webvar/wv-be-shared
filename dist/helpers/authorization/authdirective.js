@@ -1,6 +1,6 @@
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { isAllowed } from './authorizationHelper';
+import { isAllowed } from './authorizationHelper.js';
 export const authDirective = (directiveName, schema) => {
     const typeDirectiveArgumentMaps = {};
     return mapSchema(schema, {

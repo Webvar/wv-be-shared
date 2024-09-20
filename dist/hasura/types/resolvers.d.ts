@@ -1,5 +1,5 @@
-import type { HasuraCrudDataType, HasuraCrudDataTypeRelationships } from './common';
-import type { HasuraCrudQueryGetManyArgs, HasuraCrudQueryGetAggregateArgs, HasuraCrudQueryGetOneArgs } from './inputs';
+import type { HasuraCrudDataType, HasuraCrudDataTypeRelationships } from './common.js';
+import type { HasuraCrudQueryGetManyArgs, HasuraCrudQueryGetAggregateArgs, HasuraCrudQueryGetOneArgs } from './inputs/index.js';
 export type HasuraCrudResolverQueryGetMany<T extends HasuraCrudDataType<unknown, string, HasuraCrudDataTypeRelationships>, C> = {
     [_Key in Uncapitalize<T['name']>]: (_root: unknown, _args: HasuraCrudQueryGetManyArgs<T>, _context: C) => Promise<T['type'][]>;
 };

@@ -1,4 +1,4 @@
-import type { HasuraCrudDataType, HasuraCrudDataTypeRelationships, HasuraCrudPrimitive } from '../common';
+import type { HasuraCrudDataType, HasuraCrudDataTypeRelationships, HasuraCrudPrimitive } from '../common.js';
 export type HasuraCrudInputComparisonExp<T extends HasuraCrudPrimitive> = {
     _eq?: NonNullable<T>;
     _gt?: NonNullable<T>;

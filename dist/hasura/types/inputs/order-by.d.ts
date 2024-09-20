@@ -1,4 +1,4 @@
-import type { HasuraCrudDataType, HasuraCrudDataTypeRelationships, HasuraCrudPrimitive } from '../common';
+import type { HasuraCrudDataType, HasuraCrudDataTypeRelationships, HasuraCrudPrimitive } from '../common.js';
 export type HasuraCrudOrderBy = 'ASC' | 'DESC';
 export type HasuraCrudInputOrderByRelationshipsOne<T extends HasuraCrudDataType<unknown, string, HasuraCrudDataTypeRelationships>> = {
     [Key in keyof T['relationships']['one']]?: HasuraCrudInputOrderBy<T['relationships']['one'][Key]>;

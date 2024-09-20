@@ -1,6 +1,6 @@
 import { FieldNode, GraphQLInterfaceType, GraphQLObjectType, GraphQLResolveInfo, GraphQLScalarType, GraphQLSchema, SelectionSetNode } from 'graphql';
-import type { HasuraCrudDataType } from './types/common';
-import type { HasuraCrudInputBoolExp } from './types/inputs';
+import type { HasuraCrudDataType } from './types/common.js';
+import type { HasuraCrudInputBoolExp } from './types/inputs/index.js';
 export declare const createBaseTypes: (prefix: string | undefined, baseScalars: GraphQLScalarType[]) => GraphQLSchema;
 export declare enum SchemaResolverType {
     GET_MANY = "getMany",

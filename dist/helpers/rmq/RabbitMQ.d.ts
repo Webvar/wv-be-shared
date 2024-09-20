@@ -1,6 +1,6 @@
 import { Connection, Options } from 'amqplib';
 import { RabbitMQPublish } from './handlers/RabbitMQPublish.js';
-import { RabbitMQConsumer } from './handlers/RabbitMQConsumer';
+import { RabbitMQConsumer } from './handlers/RabbitMQConsumer.js';
 export type RabbitMQOptions = {
     url: string;
     reconnect: boolean;

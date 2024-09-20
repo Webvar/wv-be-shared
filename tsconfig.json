@@ -9,6 +9,10 @@
     "esModuleInterop": true,
     "moduleResolution": "node"
   },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  },
   "include": [
     "src/**/*.ts",
     "src/**/*.js",

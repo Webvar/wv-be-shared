@@ -5,7 +5,7 @@ import { RabbitMQ } from './helpers/rmq/RabbitMQ.js';
 import { RabbitMQPublish, RabbitMQPublishOptions, RabbitMQPublishTargetType } from './helpers/rmq/handlers/RabbitMQPublish.js';
 import { RabbitMQConsumer, RabbitMQConsumerOptions } from './helpers/rmq/handlers/RabbitMQConsumer.js';
 import { createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
-import type { PrismaWhere } from './hasura';
+import type { PrismaWhere } from './hasura/index.js';
 import { authDirective } from './helpers/authorization/authdirective.js';
 export { jwtMiddleware, WVServiceContext, loggerFactory, CustomError, RabbitMQ, RabbitMQPublish, RabbitMQConsumerOptions, RabbitMQPublishTargetType, RabbitMQConsumer, RabbitMQPublishOptions, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy, authDirective };
 export type { PrismaWhere, };

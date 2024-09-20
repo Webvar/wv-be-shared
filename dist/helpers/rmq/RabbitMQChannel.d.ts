@@ -1,6 +1,6 @@
 import { Connection } from 'amqplib';
 import { RabbitMQPublish } from './handlers/RabbitMQPublish.js';
-import { RabbitMQConsumer } from './handlers/RabbitMQConsumer';
+import { RabbitMQConsumer } from './handlers/RabbitMQConsumer.js';
 export type RabbitMQChannelOptions = {
     name: string;
     retryChannel: boolean;

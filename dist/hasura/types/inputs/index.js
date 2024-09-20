@@ -1,2 +1,2 @@
-export * from './where';
-export * from './order-by';
+export * from './where.js';
+export * from './order-by.js';
