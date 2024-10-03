@@ -9,7 +9,6 @@ jest.mock('amqplib');
 
 const mockAmqplibConnect = amqplib.connect as jest.MockedFunction<typeof amqplib.connect>;
 
-
 describe('RabbitMQ', () => {
   beforeEach(() => {
     mockAmqplibConnect.mockReset();
@@ -31,7 +30,7 @@ describe('RabbitMQ', () => {
     const connection = rmq.currentConnection;
 
     expect(connection).not.toBeNull();
-    expect(mockAmqplibConnect.mock.lastCall[0]).toBe(options.url);
+    expect(mockAmqplibConnect.mock.lastCall![0]).toBe(options.url);
     expect(mockAmqplibConnect.mock.calls.length).toBe(1);
   });
 
@@ -56,7 +55,7 @@ describe('RabbitMQ', () => {
     const connection = rmq.currentConnection;
 
     expect(connection).not.toBeNull();
-    expect(mockAmqplibConnect.mock.lastCall[0]).toBe(options.url);
+    expect(mockAmqplibConnect.mock.lastCall![0]).toBe(options.url);
     expect(mockAmqplibConnect.mock.calls.length).toBe(2);
   });
 
@@ -99,11 +98,12 @@ describe('RabbitMQ', () => {
 
     const rmq = new RabbitMQ(options);
 
+    await rmq.waitConnection(); // Ensure connection is fully established before publishing
     await rmq.publish(mockPublisher);
 
     expect(mockConnection.createChannel.mock.calls.length).toBe(1);
-    expect(mockChannel.sendToQueue.mock.calls.length).toBe(1);
-    expect(mockChannel.sendToQueue.mock.lastCall[0]).toBe('test_queue');
+    expect(mockChannel.sendToQueue.mock.calls.length).toBe(1); 
+    expect(mockChannel.sendToQueue.mock.lastCall[0]).toBe('test_queue'); 
     expect(mockChannel.sendToQueue.mock.lastCall[1].toString('utf-8')).toBe(JSON.stringify({
       data: 123,
     }));
@@ -158,6 +158,7 @@ describe('RabbitMQ', () => {
 
     const rmq = new RabbitMQ(options);
 
+    await rmq.waitConnection();
     await rmq.subscribe(mockConsumer);
 
     const handleMessage = mockChannel.consume.mock.lastCall[1];
@@ -171,6 +172,6 @@ describe('RabbitMQ', () => {
     expect(mockConsumerHandler.mock.lastCall[0]).toBe(1337);
     expect(mockConsumerHandler.mock.lastCall[1]).toBe(message);
     expect(mockChannel.ack.mock.calls.length).toBe(1);
-    expect(mockChannel.nack.mock.calls.length).toBe(0);
+    expect(mockChannel.nack.mock.calls.length).toBe(0); 
   });
 });

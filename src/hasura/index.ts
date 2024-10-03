@@ -433,3 +433,39 @@ export const graphqlInfoHasSelection = (
     return field.name.value === fieldName;
   }) as FieldNode;
 };
+
+export const graphqlIncludeGenerator = (
+  selectionSet: SelectionSetNode | undefined | null,
+  excludeFields: string[]
+): Record<string, unknown> | undefined => {
+  const include: Record<string, unknown> = {};
+
+  if (!selectionSet) {
+    return include;
+  }
+
+  selectionSet.selections.forEach((selection: SelectionNode) => {
+    if (selection.kind === Kind.FIELD) {
+      const fieldName: string = selection.name.value;
+
+      if (!excludeFields.includes(fieldName)) {
+        include[fieldName] = selection.selectionSet
+          ? {
+              select:
+                selection.selectionSet.selections?.reduce(
+                  (acc: Record<string, unknown>, sel: SelectionNode) => {
+                    if (sel.kind === Kind.FIELD) {
+                      acc[sel.name.value] = true;
+                    }
+                    return acc;
+                  },
+                  {}
+                ) || {},
+            }
+          : true;
+      }
+    }
+  });
+
+  return include;
+};

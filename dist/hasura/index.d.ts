@@ -23,3 +23,4 @@ export declare const graphqlOrderByToPrismaOrderBy: (order?: Record<string, unkn
     [k: string]: string;
 }[] | undefined;
 export declare const graphqlInfoHasSelection: (fieldName: string, info: GraphQLResolveInfo) => FieldNode | undefined;
+export declare const graphqlIncludeGenerator: (selectionSet: SelectionSetNode | undefined | null, excludeFields: string[]) => Record<string, unknown> | undefined;
