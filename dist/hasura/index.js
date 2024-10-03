@@ -301,3 +301,28 @@ export const graphqlInfoHasSelection = (fieldName, info) => {
         return field.name.value === fieldName;
     });
 };
+export const graphqlIncludeGenerator = (selectionSet, excludeFields) => {
+    const include = {};
+    if (!selectionSet) {
+        return include;
+    }
+    selectionSet.selections.forEach((selection) => {
+        var _a;
+        if (selection.kind === Kind.FIELD) {
+            const fieldName = selection.name.value;
+            if (!excludeFields.includes(fieldName)) {
+                include[fieldName] = selection.selectionSet
+                    ? {
+                        select: ((_a = selection.selectionSet.selections) === null || _a === void 0 ? void 0 : _a.reduce((acc, sel) => {
+                            if (sel.kind === Kind.FIELD) {
+                                acc[sel.name.value] = true;
+                            }
+                            return acc;
+                        }, {})) || {},
+                    }
+                    : true;
+            }
+        }
+    });
+    return include;
+};
