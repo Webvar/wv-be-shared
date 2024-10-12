@@ -7,6 +7,7 @@ import jwtMiddleware, { WVServiceContext } from './middlewares/jwtMiddleware.js'
 import { RabbitMQ } from './helpers/rmq/RabbitMQ.js';
 import { RabbitMQPublish, RabbitMQPublishOptions, RabbitMQPublishTargetType } from './helpers/rmq/handlers/RabbitMQPublish.js';
 import { RabbitMQConsumer, RabbitMQConsumerOptions } from './helpers/rmq/handlers/RabbitMQConsumer.js';
+import { ExchangeType, bindQueue, bindTopic, assertBasicExchange, assertBasicQueue } from './helpers/rmq/helpers.js';
 import { graphqlIncludeGenerator, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
 import type { PrismaWhere } from './hasura';
 import { authDirective } from './helpers/authorization/authdirective.js'
@@ -22,6 +23,11 @@ export {
   RabbitMQPublishTargetType,
   RabbitMQConsumer,
   RabbitMQPublishOptions,
+  ExchangeType,
+  bindQueue,
+  bindTopic,
+  assertBasicExchange,
+  assertBasicQueue,
   createSchema,
   createBaseTypes,
   graphqlInfoHasSelection,
