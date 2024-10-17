@@ -141,6 +141,7 @@ export class RabbitMQ {
             lg.error({ state: 'SUBSCRIBE_ERROR_CONNECTION', entity: entity.name });
             return;
         }
+        this.consumers[entity.name] = entity;
         lg.info({ state: 'SUBSCRIBE_CONSUMER', entity: entity.name });
         try {
             await this.channels[entity.name].subscribeConsumer(entity);
