@@ -19,6 +19,7 @@ export class RabbitMQ {
         this.logger = logger.child({ class: 'RabbitMQ' });
         this.reconnectInterval = null;
         this.channels = {};
+        this.consumers = {};
         const lg = this.logger.child({ method: 'constructor' });
         lg.info({ state: 'SET_OPTIONS', options });
         this.options = RabbitMQ.addDefaultOptions(options);
@@ -84,6 +85,10 @@ export class RabbitMQ {
                 this.establishConnection();
                 Object.values(this.channels).forEach((channel) => {
                     channel.resetConnection(this.connection);
+                });
+                Object.values(this.consumers).forEach(async (consumer) => {
+                    lg.info({ state: 'REBIND_CONSUMER', consumer: consumer.name });
+                    await this.subscribe(consumer);
                 });
                 if (this.reconnectInterval) {
                     await clearIntervalAsync(this.reconnectInterval);
