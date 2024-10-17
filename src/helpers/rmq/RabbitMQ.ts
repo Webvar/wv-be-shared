@@ -28,6 +28,7 @@ export class RabbitMQ {
   private options: RabbitMQOptions;
   private reconnectInterval: SetIntervalAsyncTimer<[]> | null = null;
   private channels: Record<string, RabbitMQChannel> = {};
+  private consumers: Record<string, RabbitMQConsumer> = {};
 
   get currentConnection() {
     return this.connection;
@@ -113,6 +114,11 @@ export class RabbitMQ {
           channel.resetConnection(this.connection!);
         });
 
+        Object.values(this.consumers).forEach(async (consumer) => {
+        lg.info({ state: 'REBIND_CONSUMER', consumer: consumer.name });
+        await this.subscribe(consumer);
+      });
+
         if (this.reconnectInterval) {
           await clearIntervalAsync(this.reconnectInterval);
           this.reconnectInterval = null;
@@ -174,6 +180,8 @@ export class RabbitMQ {
       lg.error({ state: 'SUBSCRIBE_ERROR_CONNECTION', entity: entity.name });
       return;
     }
+
+    this.consumers[entity.name] = entity;
 
     lg.info({ state: 'SUBSCRIBE_CONSUMER', entity: entity.name });
 
