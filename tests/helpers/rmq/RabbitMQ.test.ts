@@ -14,6 +14,81 @@ describe('RabbitMQ', () => {
     mockAmqplibConnect.mockReset();
   });
 
+it('should re-bind consumer when connection is re-established', async () => {
+  const options: Partial<RabbitMQOptions> = {
+    url: 'amqp://localhost:1111',
+    reconnectTimeout: 0,
+  };
+
+  const mockConsumerHandler = jest.fn();
+  mockConsumerHandler.mockResolvedValue(null);
+
+  const mockConsumer = new class extends RabbitMQConsumer {
+    get name(): string {
+      return 'test_rebinding_consumer';
+    }
+
+    protected get options() {
+      return {
+        prefetch: 10,
+      };
+    }
+
+    async handler(data: object, message: amqplib.Message): Promise<void> {
+      mockConsumerHandler(data, message);
+    }
+  };
+
+  const mockChannel = new class extends EventEmitter {
+    consume = jest.fn();
+    prefetch = jest.fn();
+    ack = jest.fn();
+    nack = jest.fn();
+  };
+
+  const mockConnection = new class extends EventEmitter {
+    createChannel = jest.fn();
+  };
+
+  mockConnection.createChannel.mockResolvedValue(mockChannel);
+
+  mockAmqplibConnect.mockResolvedValue(mockConnection as unknown as amqplib.Connection);
+
+  const rmq = new RabbitMQ(options);
+
+  await rmq.waitConnection();
+  await rmq.subscribe(mockConsumer);
+
+  // Simulate connection close
+  mockConnection.emit('close');
+
+  mockAmqplibConnect.mockResolvedValue(mockConnection as unknown as amqplib.Connection);
+  await rmq.waitConnection();
+
+  await rmq.subscribe(mockConsumer);
+
+  expect(mockConnection.createChannel.mock.calls.length).toBe(3);
+  expect(mockChannel.consume.mock.calls.length).toBe(1); 
+
+  const message = {
+    properties: {
+      messageId: 'test_rebinding',
+    },
+    content: Buffer.from('42'),
+  };
+
+  const handleMessage = mockChannel.consume.mock.lastCall[1];
+  await handleMessage(message);
+
+  expect(mockConsumerHandler.mock.calls.length).toBe(1);
+  expect(mockConsumerHandler.mock.lastCall[0]).toBe(42);
+  expect(mockConsumerHandler.mock.lastCall[1]).toBe(message);
+  expect(mockChannel.ack.mock.calls.length).toBe(1);
+  expect(mockChannel.nack.mock.calls.length).toBe(0);
+});
+
+
+
   it('should initiate connection when instance created', async () => {
     const options: Partial<RabbitMQOptions> = {
       url: 'amqp://localhost:1111',

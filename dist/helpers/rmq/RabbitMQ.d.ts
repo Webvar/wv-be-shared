@@ -14,6 +14,7 @@ export declare class RabbitMQ {
     private options;
     private reconnectInterval;
     private channels;
+    private consumers;
     get currentConnection(): Connection | null;
     waitConnection(): Promise<void>;
     constructor(options?: Partial<RabbitMQOptions>);
