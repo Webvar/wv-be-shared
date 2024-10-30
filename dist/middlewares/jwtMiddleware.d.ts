@@ -1,16 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { BaseContext } from '@apollo/server';
-export type Me = {
-    auth0Id?: string;
-    companyId?: string;
-    email?: string;
-    id: string;
-    roles: string[];
-};
+import { Me } from '../types/common.js';
 declare module 'express' {
     interface Request {
         me?: Me;
+        isAdmin?: boolean;
     }
 }
 export interface WVServiceContext extends BaseContext {

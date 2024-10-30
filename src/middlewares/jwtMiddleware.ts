@@ -5,6 +5,7 @@ import jwksClient, { CertSigningKey, RsaSigningKey } from 'jwks-rsa';
 import { Request, Response, NextFunction } from 'express';
 import { BaseContext } from '@apollo/server';
 import loggerFactory from '../helpers/logger.js';
+import { Me } from '../types/common.js';
 
 // TODO: jest test can't recognize import.meta.url
 // const logger = loggerFactory(import.meta.url);
@@ -15,17 +16,10 @@ const jwksClientInstance = jwksClient({
   jwksUri: process.env.JWKS_URI || '',
 });
 
-export type Me = {
-  auth0Id?: string;
-  companyId?: string;
-  email?: string;
-  id: string;
-  roles: string[];
-}
-
 declare module 'express' {
   export interface Request {
     me?: Me;
+    isAdmin?: boolean;
   }
 }
 
