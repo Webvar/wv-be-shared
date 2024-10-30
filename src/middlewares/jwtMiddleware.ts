@@ -15,9 +15,17 @@ const jwksClientInstance = jwksClient({
   jwksUri: process.env.JWKS_URI || '',
 });
 
+export type Me = {
+  auth0Id?: string;
+  companyId?: string;
+  email?: string;
+  id: string;
+  roles: string[];
+}
+
 declare module 'express' {
   export interface Request {
-    me?: unknown;
+    me?: Me;
   }
 }
 
