@@ -9,5 +9,6 @@ import { ExchangeType, bindQueue, bindTopic, assertBasicExchange, assertBasicQue
 import { graphqlIncludeGenerator, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
 import type { PrismaWhere } from './hasura/index.js';
 import { authDirective } from './helpers/authorization/authdirective.js';
-export { jwtMiddleware, extendAuth, WVServiceContext, loggerFactory, CustomError, RabbitMQ, RabbitMQPublish, RabbitMQConsumerOptions, RabbitMQPublishTargetType, RabbitMQConsumer, RabbitMQPublishOptions, ExchangeType, bindQueue, bindTopic, assertBasicExchange, assertBasicQueue, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy, authDirective, graphqlIncludeGenerator };
+import { Me, PrincipalMe } from './types/common.js';
+export { Me, PrincipalMe, jwtMiddleware, extendAuth, WVServiceContext, loggerFactory, CustomError, RabbitMQ, RabbitMQPublish, RabbitMQConsumerOptions, RabbitMQPublishTargetType, RabbitMQConsumer, RabbitMQPublishOptions, ExchangeType, bindQueue, bindTopic, assertBasicExchange, assertBasicQueue, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy, authDirective, graphqlIncludeGenerator };
 export type { PrismaWhere, };

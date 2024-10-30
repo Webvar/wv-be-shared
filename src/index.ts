@@ -12,8 +12,12 @@ import { ExchangeType, bindQueue, bindTopic, assertBasicExchange, assertBasicQue
 import { graphqlIncludeGenerator, createSchema, createBaseTypes, graphqlInfoHasSelection, graphqlInfoToPrismaInclude, graphqlSelectionSetToPrismaInclude, graphqlWhereToPrismaWhere, graphqlOrderByToPrismaOrderBy } from './hasura/index.js';
 import type { PrismaWhere } from './hasura';
 import { authDirective } from './helpers/authorization/authdirective.js'
+import { Me, PrincipalMe } from './types/common.js';
 
 export {
+  Me,
+  PrincipalMe,
+
   jwtMiddleware,
   extendAuth,
   WVServiceContext,
@@ -40,7 +44,6 @@ export {
   authDirective,
   graphqlIncludeGenerator
 };
-
 
 export type {
   PrismaWhere,
