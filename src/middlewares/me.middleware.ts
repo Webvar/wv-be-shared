@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GraphQLResolveInfo } from 'graphql';
-import { WVServiceContext, loggerFactory } from './../index';
+import loggerFactory from '../helpers/logger';
+import { WVServiceContext } from '../middlewares/jwtMiddleware';
 
 import { Me } from '../../src/types/common';
 

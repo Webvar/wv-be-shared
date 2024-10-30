@@ -1,4 +1,4 @@
-import { loggerFactory } from './../index.js';
+import loggerFactory from '../helpers/logger.js';
 const logger = loggerFactory('file:///middlewares/me.middleware.ts');
 export const meMiddleware = (nextFunction) => async (_, _args, context, _info, ...rest) => {
     const me = context.req.me;
