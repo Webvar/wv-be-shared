@@ -6,7 +6,7 @@ import { isAllowed } from './authorizationHelper';
 import { Me, PrincipalMe } from '../../types/common';
 
 
-type ContextHandler = (context: string[]) => Promise<Record<string, Value>>;
+type ContextHandler = (payload: { context: string[], args: unknown, user: Me }) => Promise<Record<string, Value>>;
 const defaultHandler: ContextHandler = async () => ({});
 export const authDirective = (directiveName: string, schema: GraphQLSchema, contextHandler: ContextHandler = defaultHandler) => {
   const typeDirectiveArgumentMaps: Record<string, unknown> = {};
@@ -46,7 +46,7 @@ export const authDirective = (directiveName: string, schema: GraphQLSchema, cont
               },
             };
 
-            const fetchedContext = await contextHandler?.(directiveContext) || {};
+            const fetchedContext = await contextHandler?.({ context: directiveContext, args, user: me }) || {};
             const specifiedResource: Resource = {
               id: resource,
               kind: resource,

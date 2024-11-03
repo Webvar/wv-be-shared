@@ -32,7 +32,7 @@ export const authDirective = (directiveName, schema, contextHandler = defaultHan
                                 ...me,
                             },
                         };
-                        const fetchedContext = await (contextHandler === null || contextHandler === void 0 ? void 0 : contextHandler(directiveContext)) || {};
+                        const fetchedContext = await (contextHandler === null || contextHandler === void 0 ? void 0 : contextHandler({ context: directiveContext, args, user: me })) || {};
                         const specifiedResource = {
                             id: resource,
                             kind: resource,
