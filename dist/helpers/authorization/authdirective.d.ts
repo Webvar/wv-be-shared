@@ -1,2 +1,5 @@
 import { GraphQLSchema } from 'graphql';
-export declare const authDirective: (directiveName: string, schema: GraphQLSchema) => GraphQLSchema;
+import { Value } from '@cerbos/core';
+type ContextHandler = (context: string[]) => Promise<Record<string, Value>>;
+export declare const authDirective: (directiveName: string, schema: GraphQLSchema, contextHandler?: ContextHandler) => GraphQLSchema;
+export {};

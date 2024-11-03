@@ -1,7 +1,8 @@
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { isAllowed } from './authorizationHelper.js';
-export const authDirective = (directiveName, schema) => {
+const defaultHandler = async () => ({});
+export const authDirective = (directiveName, schema, contextHandler = defaultHandler) => {
     const typeDirectiveArgumentMaps = {};
     return mapSchema(schema, {
         [MapperKind.TYPE]: (type) => {
@@ -16,7 +17,7 @@ export const authDirective = (directiveName, schema) => {
             var _a, _b;
             const directive = (_b = (_a = getDirective(schema, fieldConfig, directiveName)) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : typeDirectiveArgumentMaps[typeName];
             if (directive) {
-                const { resource, action = 'read', } = directive;
+                const { resource, action = 'read', context: directiveContext = [], } = directive;
                 if (resource) {
                     // Check whether this field has the specified directive
                     const resolver = fieldConfig.resolve || defaultFieldResolver;
@@ -31,11 +32,13 @@ export const authDirective = (directiveName, schema) => {
                                 ...me,
                             },
                         };
+                        const fetchedContext = await (contextHandler === null || contextHandler === void 0 ? void 0 : contextHandler(directiveContext)) || {};
                         const specifiedResource = {
                             id: resource,
                             kind: resource,
                             attr: {
                                 args,
+                                context: fetchedContext,
                             },
                         };
                         const allowed = await isAllowed(currentResource, specifiedResource, action);
