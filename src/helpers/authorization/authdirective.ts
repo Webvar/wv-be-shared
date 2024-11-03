@@ -1,11 +1,14 @@
 import { GraphQLSchema, defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { Resource } from '@cerbos/core';
+import { Resource, Value } from '@cerbos/core';
 
 import { isAllowed } from './authorizationHelper';
 import { Me, PrincipalMe } from '../../types/common';
 
-export const authDirective = (directiveName: string, schema: GraphQLSchema) => {
+
+type ContextHandler = (context: string[]) => Promise<Record<string, Value>>;
+const defaultHandler: ContextHandler = async () => ({});
+export const authDirective = (directiveName: string, schema: GraphQLSchema, contextHandler: ContextHandler = defaultHandler) => {
   const typeDirectiveArgumentMaps: Record<string, unknown> = {};
   return mapSchema(schema, {
     [MapperKind.TYPE]: (type) => {
@@ -24,7 +27,8 @@ export const authDirective = (directiveName: string, schema: GraphQLSchema) => {
         const {
           resource,
           action = 'read',
-        }: { resource?: string; action?: string } = directive;
+          context: directiveContext = [],
+        }: { resource?: string; action?: string, context?: string[] } = directive;
 
         if (resource) {
           // Check whether this field has the specified directive
@@ -41,17 +45,20 @@ export const authDirective = (directiveName: string, schema: GraphQLSchema) => {
                 ...me,
               },
             };
+
+            const fetchedContext = await contextHandler?.(directiveContext) || {};
             const specifiedResource: Resource = {
               id: resource,
               kind: resource,
               attr: {
                 args,
+                context: fetchedContext,
               },
             };
             const allowed = await isAllowed(
               currentResource as PrincipalMe,
               specifiedResource,
-              action
+              action,
             );
             if (!allowed) {
               throw new Error(
