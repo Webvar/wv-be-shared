@@ -2,7 +2,7 @@
 
 import jwt, { SigningKeyCallback } from 'jsonwebtoken';
 import jwksClient, { CertSigningKey, RsaSigningKey } from 'jwks-rsa';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { BaseContext } from '@apollo/server';
 import loggerFactory from '../helpers/logger.js';
 import { Me } from '../types/common.js';
@@ -60,7 +60,7 @@ export function jwtVerifyCallback(err: Error | null, decoded: string | jwt.JwtPa
   }
 }
 
-export default function jwtMiddleware(req: Request, _res: Response, next: NextFunction) {
+const jwtMiddleware: RequestHandler = (req, _res, next) => {
   const lg = logger.child({ function: 'jwtMiddleware' });
   lg.debug({ hasToken: !!req.headers.authorization });
 
@@ -79,4 +79,6 @@ export default function jwtMiddleware(req: Request, _res: Response, next: NextFu
   } else {
     next();
   }
-}
+};
+
+export default jwtMiddleware;
