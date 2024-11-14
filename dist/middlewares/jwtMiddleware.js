@@ -38,7 +38,7 @@ export function jwtVerifyCallback(err, decoded, req) {
         lg.error({ status: 'error decoding token', err });
     }
 }
-export default function jwtMiddleware(req, _res, next) {
+const jwtMiddleware = (req, _res, next) => {
     var _a;
     const lg = logger.child({ function: 'jwtMiddleware' });
     lg.debug({ hasToken: !!req.headers.authorization });
@@ -57,4 +57,5 @@ export default function jwtMiddleware(req, _res, next) {
     else {
         next();
     }
-}
+};
+export default jwtMiddleware;
